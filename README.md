@@ -1,5 +1,7 @@
 # INONDA LTD service estimator
 
+Always use the supplied official INONDA LTD logo (`dist/inonda-logo.png`) for this company. Preserve its colours and proportions; do not substitute an invented mark.
+
 Private prototype for Cyprus residential and commercial property service planning.
 Target hosting: Wasmer. Intended domain: https://inonda.homes (not yet connected).
 
@@ -42,6 +44,6 @@ Location and residential/commercial type do not add hidden price multipliers. Th
 
 - 12 calculation tests: totals, recurring separation, weekly averages, condition/minimum rules, reserve/tax order, travel counting, area constraints, invalid inputs, no hidden location multipliers and zero/empty plans.
 - 4 host tests: fail-closed setup, authentication across every asset, cache headers, valid access, forbidden source paths, malformed credentials and unsupported submissions.
-- Desktop UI checked in browser; mixed one-off/monthly interaction verified.
+- Desktop and 375 px mobile viewport checked in browser with no horizontal overflow; mixed one-off/monthly interaction, live mobile budget, saved scenario restoration and invalid-input blocking verified.
 
 No existing INONDA website source or domain configuration is included or altered.

@@ -1,0 +1,13 @@
+# Explicit Python runtime: the estimator assets must always sit behind server.py.
+load("//anybuild/tools:python.bzl", "python_build", "python_config", "python_serve")
+
+config = python_config(
+    schema = 1,
+    commands = {"start": "python server.py"},
+    python_main_file = "server.py",
+    python_version = "3.12",
+    uv_version = "0.8.15",
+)
+
+build = python_build(config)
+python_serve(config, build, name = "inonda-service-estimator")
