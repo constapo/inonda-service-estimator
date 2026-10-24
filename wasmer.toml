@@ -1,0 +1,22 @@
+[package]
+name = "constapo/inonda-service-estimator"
+version = "0.1.0"
+description = "Private INONDA LTD property service estimator"
+private = true
+entrypoint = "serve"
+
+[dependencies]
+"python/python" = "3.12"
+
+[fs]
+"/app/dist" = "dist"
+"/app/server" = "host"
+
+[[command]]
+name = "serve"
+module = "python/python:python"
+runner = "wasi"
+
+[command.annotations.wasi]
+main-args = ["/app/server/server.py"]
+env = ["PYTHONUNBUFFERED=1", "HOST=0.0.0.0", "PORT=8080", "INONDA_ASSETS=/app/dist"]
