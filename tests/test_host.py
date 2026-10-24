@@ -34,8 +34,18 @@ class HostTests(unittest.TestCase):
 
     def test_fail_closed_without_credentials_on_all_assets(self):
         os.environ.pop('INONDA_PREVIEW_PASSWORD', None)
-        for path in ['/', '/app.js', '/styles.css', '/estimator.mjs', '/favicon.svg']:
+        for path in ['/', '/app.js', '/styles.css', '/estimator.mjs', '/inonda-logo.png']:
             self.assertEqual(self.request(path)[0], 503)
+        self.assertIn(b'runtime access password is missing', self.request('/')[2])
+
+    def test_short_password_explains_configuration_error_without_exposing_it(self):
+        secret = 'test-short'
+        os.environ['INONDA_PREVIEW_PASSWORD'] = secret
+        status, headers, body = self.request('/')
+        self.assertEqual(status, 503)
+        self.assertIn(b'shorter than 16 characters', body)
+        self.assertNotIn(secret.encode(), body)
+        self.assertIn('no-store', headers['Cache-Control'])
 
     def test_every_asset_requires_auth_and_responses_are_not_cached(self):
         os.environ['INONDA_PREVIEW_PASSWORD'] = 'test-only-long-secret-123456789'

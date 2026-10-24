@@ -57,8 +57,11 @@ class PrivateEstimatorHandler(BaseHTTPRequestHandler):
     def serve(self):
         # Fail closed on every path, including JS/CSS, until the owner configures access.
         password = os.environ.get('INONDA_PREVIEW_PASSWORD', '')
+        if not password:
+            self.respond(503, b'Private preview is locked: the runtime access password is missing. In Wasmer, set INONDA_PREVIEW_PASSWORD for Runtime, then Save and Redeploy.')
+            return
         if len(password) < 16:
-            self.respond(503, b'Private preview is locked. The owner must configure access before it can be used.')
+            self.respond(503, b'Private preview is locked: the configured access password is shorter than 16 characters. In Wasmer, edit INONDA_PREVIEW_PASSWORD, enter a password of at least 16 characters, then Save and Redeploy.')
             return
         if not self.authorized(password):
             self.respond(401, b'INONDA private preview. Authorized access required.', challenge=True)
