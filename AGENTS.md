@@ -6,6 +6,7 @@
 - Never read, expose, commit or embed credentials. The obsolete INONDA_PREVIEW_PASSWORD setting is no longer read by the application; do not reuse it or change the owner's credentials.
 - `Anybuild` is the Git-based hosting build. Use the Python host rather than serving `dist` publicly. `server.py` and `host/server.py` must remain identical.
 - Rates and multipliers are illustrative assumptions until the owner provides approved tariffs. Keep the range and exclusions clear; do not present an estimate as a fixed quotation. Separate one-off and recurring monthly budgets.
+- Commercial properties add a disclosed 20% to every service, including minimums and travel. Base rates remain editable and VAT-inclusive; residential prices have no commercial uplift.
 - All public monetary inputs and prices must include 19% VAT. Preserve the gross-price model and separate included VAT breakdown; never add VAT a second time. Migrate legacy VAT-exclusive saved scenarios only once.
 - Keep the frontend responsive and accessible. All service quantities, rates, minimums and assumptions must remain configurable. Do not add fabricated reviews, recommendations or customer claims.
 - Read `EDITING.md` before deployment. Wasmer automatically deploys commits to `main`. A user asking for a direct live update authorizes that deployment while preserving public visitor access and private editing; a request for a draft or pull request does not authorize merging it.

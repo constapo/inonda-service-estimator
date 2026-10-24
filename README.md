@@ -27,7 +27,7 @@ See [EDITING.md](EDITING.md) for remote editing by the owner, ChatGPT or Claude.
 
 ## Validation
 
-Run `node --test tests/estimator.test.mjs` for the 12 calculation checks and `python -m unittest discover -s tests -p 'test_*.py'` for the 5 public-host checks. Host checks cover anonymous asset access, ignored obsolete password settings, unavailable source/editing routes, HEAD responses and rejected submissions.
+Run `node --test tests/estimator.test.mjs` for the 17 calculation checks and `python -m unittest discover -s tests -p 'test_*.py'` for the 5 public-host checks. Host checks cover anonymous asset access, ignored obsolete password settings, unavailable source/editing routes, HEAD responses and rejected submissions.
 
 Desktop and mobile UI checks cover service combinations, monthly versus one-off totals, saved scenarios, validation and layout. Saved scenarios remain local to each browser.
 
@@ -35,6 +35,6 @@ Desktop and mobile UI checks cover service combinations, monthly versus one-off 
 
 Service allowance = max(quantity × rate, minimum) × condition factor × recurring frequency, plus travel. Management has no condition factor. Maintenance quantity is inspection visits per period; its minimum is per project/month. Other on-site minimums apply per visit. Weekly frequency averages 52/12 visits per month. All monetary inputs are VAT-inclusive. Reserve applies to these gross allowances; VAT is extracted once as gross × 19/119 and shown separately. Range bounds round outward to €5. Older locally saved net rates migrate once to VAT-inclusive amounts.
 
-No hidden location or property-type surcharge applies. Cleaning and renovation areas cannot exceed indoor size; garden area is independent.
+Location adds no automatic surcharge. Commercial properties have a clearly displayed 20% uplift on every service, including minimum charges and travel, applied to VAT-inclusive base prices. Residential properties have no uplift. Cleaning and renovation areas cannot exceed indoor size; garden area is independent.
 
 This repository does not change inonda.site or inonda.org.

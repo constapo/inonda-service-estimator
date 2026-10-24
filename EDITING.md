@@ -52,3 +52,5 @@ For calculation changes, run `node --test tests/estimator.test.mjs`. For host ch
 If a live update breaks the site, redeploy a previous working version from Wasmer's deployment history or revert the offending Git commit. Keep the repository private and preserve public read-only visitor access during repairs.
 
 All service rates, minimums and travel inputs in `dist/estimator.mjs` include 19% VAT. Enter VAT-inclusive default prices; do not add VAT a second time. The calculator extracts the included VAT for the breakdown. Visitors can adjust their own rates and quantities without changing defaults for anyone else.
+
+Commercial facilities automatically add 20% to every selected service, including minimums and travel. Default and visitor-entered rates remain VAT-inclusive base rates. Preserve the separate commercial adjustment and included VAT breakdown.

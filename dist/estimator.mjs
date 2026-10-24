@@ -1,6 +1,7 @@
 // Illustrative planning assumptions only. All monetary inputs include 19% VAT.
 export const VAT_RATE = 19;
 export const PRICING_VERSION = 2;
+export const COMMERCIAL_UPLIFT = 0.20;
 export const SERVICES = {
   maintenance: {name:'Maintenance',icon:'tools',description:'Preventive checks & property upkeep',unit:'visit',scope:'Preventive inspection; repairs and parts excluded.',rate:101.15,minimum:101.15,quantity:1,frequency:0},
   renovation: {name:'Renovation',icon:'paint',description:'Refresh, refurbish & reimagine',unit:'m²',scope:'Cosmetic refresh; labour and basic finish allowance only.',rate:53.55,minimum:535.5,quantity:25,frequency:0,variant:'cosmetic'},
@@ -38,6 +39,7 @@ export function calculate(state){
   const size=number(state.size,10,10000,'Indoor size',true),spread=number(state.uncertainty,5,60,'Estimate range')/100,reserve=number(state.reserve,0,50,'Budget reserve')/100,tax=VAT_RATE/100,travel=number(state.travel,0,500,'Travel allowance');
   const condition=Number(state.condition);if(![1,1.15,1.35].includes(condition))errors.push('Choose a valid property condition.');
   if(!['residential','commercial'].includes(state.type))errors.push('Choose a property type.');
+  const commercialFactor=state.type==='commercial'?1+COMMERCIAL_UPLIFT:1;
   if(!LOCATIONS.includes(state.location))errors.push('Choose a location.');
   if(typeof state.notes!=='string'||state.notes.length>1500)errors.push('Notes must be under 1,500 characters.');
   const ids=Array.isArray(state.selected)?state.selected:[];
@@ -56,11 +58,11 @@ export function calculate(state){
     const visits=id==='management'?0:id==='maintenance'?quantity*multiplier:multiplier;
     // Maintenance quantity is visits. Its minimum is a project/month minimum,
     // while all other on-site services have a per-visit minimum.
-    const serviceBase=perVisit*multiplier,travelCost=visits*travel;
-    rows.push({id,name:def.name,quantity,rate,minimum,frequency,recurring,conditionFactor,serviceBase,travelCost,visits,base:serviceBase+travelCost,scope:VARIANTS[id]?.[s.variant]?.scope||def.scope,unit:def.unit,minimumApplied:quantity*rate<minimum});
+    const serviceBase=perVisit*multiplier*commercialFactor,travelCost=visits*travel*commercialFactor;
+    rows.push({id,name:def.name,quantity,rate,minimum,frequency,recurring,conditionFactor,commercialFactor,serviceBase,travelCost,visits,base:serviceBase+travelCost,scope:VARIANTS[id]?.[s.variant]?.scope||def.scope,unit:def.unit,minimumApplied:quantity*rate<minimum});
   }
   function total(recurring){const bucket=rows.filter(r=>r.recurring===recurring),base=bucket.reduce((s,r)=>s+r.base,0),buffer=base*reserve,central=base+buffer,net=central/(1+tax),taxAmount=central-net;return {base,reserve:buffer,net,tax:taxAmount,central,low:central===0?0:Math.floor(central*(1-spread)/5)*5,high:central===0?0:Math.ceil(central*(1+spread)/5)*5,visits:bucket.reduce((s,r)=>s+r.visits,0)};}
-  return {errors,rows,oneOff:total(false),monthly:total(true),size,spread,reserveRate:reserve,taxRate:tax,condition};
+  return {errors,rows,oneOff:total(false),monthly:total(true),size,spread,reserveRate:reserve,taxRate:tax,condition,commercialFactor};
 }
 export const money=value=>new Intl.NumberFormat('en-CY',{style:'currency',currency:'EUR',minimumFractionDigits:0,maximumFractionDigits:2}).format(value);
 export const range=total=>`${money(total.low)} – ${money(total.high)}`;
