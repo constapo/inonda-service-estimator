@@ -11,7 +11,7 @@ Wasmer is connected to the `main` branch. A commit pushed to `main` triggers a n
 2. Open the file you want to change, then choose **Edit this file** (the pencil icon). You can also press `.` on the repository page to open GitHub's browser editor.
 3. Make the change and choose **Commit changes**. A commit to `main` deploys automatically. For a larger change, use a branch and review it before merging into `main`.
 4. Watch the new deployment at https://wasmer.io/apps/constapo/inonda-service-estimator/deployments.
-5. Wait until the deployment is ready, then refresh the private website and check the result. A saved file alone does not guarantee a successful deployment.
+5. Wait until the deployment is ready, then refresh the public website and check the result. A saved file alone does not guarantee a successful deployment.
 
 | What to update | File |
 | --- | --- |
@@ -31,20 +31,22 @@ Give the assistant access to this private repository using your existing GitHub 
 
 Example request:
 
-> Update `constapo/inonda-service-estimator`. Keep the official INONDA logo, Ocean Blue / Dark Navy / white branding, private access and existing INONDA websites intact. Make [specific change]. Validate the relevant behaviour, commit it, and verify the Wasmer deployment at www.inonda.homes. Keep rates labelled illustrative unless I supply approved rates.
+> Update `constapo/inonda-service-estimator`. Keep the official INONDA logo, Ocean Blue / Dark Navy / white branding, public access without visitor login, private editing access and existing INONDA websites intact. Make [specific change]. Validate the relevant behaviour, commit it, and verify the Wasmer deployment at www.inonda.homes. Keep rates labelled illustrative unless I supply approved rates.
 
 For substantial changes, ask for a pull request before merging. For a direct live update, explicitly request a tested commit to `main`.
 
-## Keep access private
+## Public viewing, private editing
 
-The username is `inonda`. The private access password belongs only in Wasmer's runtime environment variable `INONDA_PREVIEW_PASSWORD`, and must contain at least 16 characters. Enter it yourself in Wasmer's Environment Vars and choose **Save and Redeploy**. Do not put it in source files, commits, URLs, screenshots, issue comments or chat messages.
+The owner explicitly requested that everyone can open the estimator without a login or password. Do not add a visitor password gate. The old INONDA_PREVIEW_PASSWORD runtime setting is ignored and is not needed to view the website.
 
-No configured password: the server stays locked and returns HTTP 503. Missing or incorrect login credentials: HTTP 401. Valid login: estimator assets are served. CDN caching must stay disabled; HTTPS redirect must stay enabled.
+The GitHub repository remains private. Manual editing requires the owner's GitHub account; deployment settings require the owner's Wasmer account. Visitors can change their own estimate assumptions but cannot update the website's defaults or code.
 
-Saved estimate scenarios are local to the visitor's browser. They do not update the website's default rates. To change defaults for every visitor, edit `dist/estimator.mjs` and deploy the change.
+Do not read, reveal, commit or embed credentials. Keep HTTPS enabled. The app exposes only its estimator assets and has no public source, configuration, admin or editing route. CDN caching remains disabled and responses remain no-store.
+
+Saved estimate scenarios stay in each visitor's browser and do not change default prices for other visitors. To update defaults for everyone, edit dist/estimator.mjs and deploy the change.
 
 ## Checks and rollback
 
-For calculation changes, run `node --test tests/estimator.test.mjs`. For host changes, run `python -m unittest discover -s tests -p 'test_*.py'`. Check desktop and mobile controls, one-off/monthly totals, input validation and access protection as appropriate.
+For calculation changes, run `node --test tests/estimator.test.mjs`. For host changes, run `python -m unittest discover -s tests -p 'test_*.py'`. Check desktop and mobile controls, one-off/monthly totals, input validation and anonymous visitor access as appropriate.
 
-If a live update breaks the site, redeploy a previous working version from Wasmer's deployment history or revert the offending Git commit. Do not fix a broken private deployment by removing authentication or exposing the repository.
+If a live update breaks the site, redeploy a previous working version from Wasmer's deployment history or revert the offending Git commit. Keep the repository private and preserve public read-only visitor access during repairs.

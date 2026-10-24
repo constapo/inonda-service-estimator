@@ -1,7 +1,7 @@
 [package]
 name = "constapo/inonda-service-estimator"
 version = "0.1.0"
-description = "Private INONDA LTD property service estimator"
+description = "INONDA LTD property service estimator with public visitor access"
 private = true
 entrypoint = "serve"
 

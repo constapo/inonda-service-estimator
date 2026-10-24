@@ -1,4 +1,3 @@
-import base64
 import importlib.util
 import os
 import threading
@@ -11,10 +10,11 @@ spec = importlib.util.spec_from_file_location('host', Path(__file__).resolve().p
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
+
 class HostTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.server = HTTPServer(('127.0.0.1', 0), module.PrivateEstimatorHandler)
+        cls.server = HTTPServer(('127.0.0.1', 0), module.EstimatorHandler)
         cls.thread = threading.Thread(target=cls.server.serve_forever, daemon=True)
         cls.thread.start()
 
@@ -32,52 +32,40 @@ class HostTests(unittest.TestCase):
         connection.close()
         return result
 
-    def test_fail_closed_without_credentials_on_all_assets(self):
+    def test_all_estimator_assets_load_without_login(self):
         os.environ.pop('INONDA_PREVIEW_PASSWORD', None)
-        for path in ['/', '/app.js', '/styles.css', '/estimator.mjs', '/inonda-logo.png']:
-            self.assertEqual(self.request(path)[0], 503)
-        self.assertIn(b'runtime access password is missing', self.request('/')[2])
-
-    def test_short_password_explains_configuration_error_without_exposing_it(self):
-        secret = 'test-short'
-        os.environ['INONDA_PREVIEW_PASSWORD'] = secret
-        status, headers, body = self.request('/')
-        self.assertEqual(status, 503)
-        self.assertIn(b'shorter than 16 characters', body)
-        self.assertNotIn(secret.encode(), body)
-        self.assertIn('no-store', headers['Cache-Control'])
-
-    def test_empty_stored_password_is_distinct_from_missing_binding(self):
-        os.environ['INONDA_PREVIEW_PASSWORD'] = ''
-        status, headers, body = self.request('/')
-        self.assertEqual(status, 503)
-        self.assertIn(b'stored runtime access password is empty', body)
-        self.assertIn('no-store', headers['Cache-Control'])
-
-    def test_every_asset_requires_auth_and_responses_are_not_cached(self):
-        os.environ['INONDA_PREVIEW_PASSWORD'] = 'test-only-long-secret-123456789'
-        for path in module.ASSETS:
+        for path, (file_name, content_type) in module.ASSETS.items():
             status, headers, body = self.request(path)
-            self.assertEqual(status, 401)
+            self.assertEqual(status, 200, path)
+            self.assertEqual(body, (module.ROOT / file_name).read_bytes())
+            self.assertEqual(headers['Content-Type'], content_type)
+            self.assertNotIn('WWW-Authenticate', headers)
             self.assertIn('no-store', headers['Cache-Control'])
-            self.assertIn('Basic realm=', headers['WWW-Authenticate'])
-            self.assertNotIn(b'illustrative', body)
 
-    def test_valid_auth_loads_assets_and_blocks_source_or_traversal(self):
-        password = 'test-only-long-secret-123456789'
-        os.environ['INONDA_PREVIEW_PASSWORD'] = password
-        auth = 'Basic ' + base64.b64encode(('inonda:' + password).encode()).decode()
-        for path in module.ASSETS:
-            self.assertEqual(self.request(path, auth)[0], 200)
-        for path in ['/server.py', '/app.yaml', '/../server.py', '/%2e%2e/server.py', '/dist/', '/.openai/hosting.json']:
-            self.assertEqual(self.request(path, auth)[0], 404)
-        self.assertEqual(self.request('/', auth, 'HEAD')[2], b'')
+    def test_old_password_settings_and_auth_headers_do_not_restore_login(self):
+        for value in ['', 'test-short', 'test-only-long-secret-123456789']:
+            os.environ['INONDA_PREVIEW_PASSWORD'] = value
+            for auth in [None, 'Basic malformed', 'Bearer ignored']:
+                status, headers, body = self.request('/', auth)
+                self.assertEqual(status, 200)
+                self.assertNotIn('WWW-Authenticate', headers)
+                self.assertNotIn(b'Private preview is locked', body)
 
-    def test_invalid_auth_and_post_never_return_estimator(self):
-        os.environ['INONDA_PREVIEW_PASSWORD'] = 'test-only-long-secret-123456789'
-        for auth in ['Basic ???', 'Basic ' + base64.b64encode(b'inonda:wrong').decode(), 'Bearer a']:
-            self.assertEqual(self.request('/', auth)[0], 401)
+    def test_source_editing_and_traversal_routes_stay_unavailable(self):
+        for path in ['/server.py', '/host/server.py', '/app.yaml', '/Anybuild',
+                     '/../server.py', '/%2e%2e/server.py', '/dist/',
+                     '/.openai/hosting.json', '/.env', '/admin', '/edit']:
+            self.assertEqual(self.request(path)[0], 404, path)
+
+    def test_head_has_correct_headers_and_no_response_body(self):
+        status, headers, body = self.request('/', method='HEAD')
+        self.assertEqual(status, 200)
+        self.assertEqual(body, b'')
+        self.assertEqual(int(headers['Content-Length']), len((module.ROOT / 'index.html').read_bytes()))
+
+    def test_post_cannot_change_the_website(self):
         self.assertEqual(self.request('/', method='POST')[0], 405)
+
 
 if __name__ == '__main__':
     unittest.main()

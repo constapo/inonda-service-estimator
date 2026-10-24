@@ -8,5 +8,4 @@ scaling:
 capabilities:
   cdn_cache:
     enabled: false
-# Set INONDA_PREVIEW_PASSWORD (at least 16 characters) in Wasmer Environment Vars.
-# Do not put the password in this file, the ZIP archive or the browser client.
+# Visitor access is public. Source and deployment editing stay account-protected.

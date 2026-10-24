@@ -1,4 +1,4 @@
-# Explicit Python runtime: the estimator assets must always sit behind server.py.
+# Explicit Python runtime: serve the public estimator through the asset allowlist.
 load("//anybuild/tools:python.bzl", "python_build", "python_config", "python_serve")
 
 config = python_config(
