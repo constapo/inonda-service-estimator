@@ -47,6 +47,13 @@ class HostTests(unittest.TestCase):
         self.assertNotIn(secret.encode(), body)
         self.assertIn('no-store', headers['Cache-Control'])
 
+    def test_empty_stored_password_is_distinct_from_missing_binding(self):
+        os.environ['INONDA_PREVIEW_PASSWORD'] = ''
+        status, headers, body = self.request('/')
+        self.assertEqual(status, 503)
+        self.assertIn(b'stored runtime access password is empty', body)
+        self.assertIn('no-store', headers['Cache-Control'])
+
     def test_every_asset_requires_auth_and_responses_are_not_cached(self):
         os.environ['INONDA_PREVIEW_PASSWORD'] = 'test-only-long-secret-123456789'
         for path in module.ASSETS:
