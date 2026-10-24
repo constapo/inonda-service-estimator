@@ -20,7 +20,7 @@ Wasmer is connected to the `main` branch. A commit pushed to `main` triggers a n
 | Default rates, service scopes, minimums and calculation rules | `dist/estimator.mjs` |
 | Form interactions, download text, saved scenarios and print layout | `dist/app.js` |
 | Official company logo | `dist/inonda-logo.png` |
-| Server access protection and asset routes | `server.py` and `host/server.py` |
+| Public asset routes and host response rules | `server.py` and `host/server.py` |
 | Wasmer build/runtime configuration | `Anybuild`, `wasmer.toml`, `app.yaml` |
 
 Keep `server.py` and `host/server.py` identical. The first serves the Git-based Anybuild deployment; the second supports the filesystem mapping in `wasmer.toml`.
@@ -31,7 +31,7 @@ Give the assistant access to this private repository using your existing GitHub 
 
 Example request:
 
-> Update `constapo/inonda-service-estimator`. Keep the official INONDA logo, Ocean Blue / Dark Navy / white branding, public access without visitor login, private editing access and existing INONDA websites intact. Make [specific change]. Validate the relevant behaviour, commit it, and verify the Wasmer deployment at www.inonda.homes. Keep rates labelled illustrative unless I supply approved rates.
+> Update `constapo/inonda-service-estimator`. Keep the official INONDA logo, Ocean Blue / Dark Navy / white branding, public access without visitor login, private editing access and existing INONDA websites intact. Make [specific change]. Validate the relevant behaviour, commit it, and verify the Wasmer deployment at www.inonda.homes. Keep all prices inclusive of 19% VAT and rates labelled illustrative unless I supply approved rates.
 
 For substantial changes, ask for a pull request before merging. For a direct live update, explicitly request a tested commit to `main`.
 
@@ -50,3 +50,5 @@ Saved estimate scenarios stay in each visitor's browser and do not change defaul
 For calculation changes, run `node --test tests/estimator.test.mjs`. For host changes, run `python -m unittest discover -s tests -p 'test_*.py'`. Check desktop and mobile controls, one-off/monthly totals, input validation and anonymous visitor access as appropriate.
 
 If a live update breaks the site, redeploy a previous working version from Wasmer's deployment history or revert the offending Git commit. Keep the repository private and preserve public read-only visitor access during repairs.
+
+All service rates, minimums and travel inputs in `dist/estimator.mjs` include 19% VAT. Enter VAT-inclusive default prices; do not add VAT a second time. The calculator extracts the included VAT for the breakdown. Visitors can adjust their own rates and quantities without changing defaults for anyone else.

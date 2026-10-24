@@ -11,7 +11,7 @@ Always use the supplied official INONDA LTD logo (`dist/inonda-logo.png`). Prese
 - Six combinable services: maintenance, renovation, cleaning, handyman, landscaping and management.
 - Residential/commercial property, Cyprus location, size and condition.
 - Editable quantities, rates, minimums and frequencies, with clear scope and exclusions.
-- Separate one-off and monthly budget ranges, reserve, configurable tax and travel.
+- Separate one-off and monthly budget ranges, optional reserve and travel, with 19% VAT included in every price.
 - Up to three scenarios saved in the visitor's browser; download a detailed text plan or print/save as PDF.
 - Responsive layout, labelled controls, reduced-motion support and no external frontend dependencies.
 
@@ -33,7 +33,7 @@ Desktop and mobile UI checks cover service combinations, monthly versus one-off 
 
 ## Calculation rules
 
-Service allowance = max(quantity × rate, minimum) × condition factor × recurring frequency, plus travel. Management has no condition factor. Maintenance quantity is inspection visits per period; its minimum is per project/month. Other on-site minimums apply per visit. Weekly frequency averages 52/12 visits per month. Reserve is added before configured tax; range bounds round outward to €5.
+Service allowance = max(quantity × rate, minimum) × condition factor × recurring frequency, plus travel. Management has no condition factor. Maintenance quantity is inspection visits per period; its minimum is per project/month. Other on-site minimums apply per visit. Weekly frequency averages 52/12 visits per month. All monetary inputs are VAT-inclusive. Reserve applies to these gross allowances; VAT is extracted once as gross × 19/119 and shown separately. Range bounds round outward to €5. Older locally saved net rates migrate once to VAT-inclusive amounts.
 
 No hidden location or property-type surcharge applies. Cleaning and renovation areas cannot exceed indoor size; garden area is independent.
 
