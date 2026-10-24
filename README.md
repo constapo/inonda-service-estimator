@@ -3,7 +3,9 @@
 Always use the supplied official INONDA LTD logo (`dist/inonda-logo.png`) for this company. Preserve its colours and proportions; do not substitute an invented mark.
 
 Private prototype for Cyprus residential and commercial property service planning.
-Target hosting: Wasmer. Intended domain: https://inonda.homes (not yet connected).
+Hosting: Wasmer. Domain: https://www.inonda.homes, with the root domain configured to redirect to www. Both domains are verified in Wasmer. The private access password must be configured before the estimator can be viewed.
+
+For remote updates by the owner, ChatGPT or Claude, see [EDITING.md](EDITING.md). Wasmer automatically deploys commits to the connected `main` branch.
 
 ## What works
 
