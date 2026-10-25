@@ -62,3 +62,7 @@ The same automated INONDA service and request guide is installed on all three we
 Visitors review a request before opening a WhatsApp or email draft. Viber buttons open the selected person’s chat; the visitor can copy their visible request. No message is sent automatically. Original communication icons are self-hosted; see BRAND-ASSETS.md.
 
 Company footer social profiles are in tools/social-links.json. Facebook and Instagram use the owner’s previously supplied company URLs. TikTok uses the confirmed company profile @inonda26; YouTube uses @InondaLTD. Preserve these exact company channels. Keep the configuration synchronized across all three repositories. LinkedIn is excluded by the owner.
+
+### Current static hosting cache behaviour
+
+Wasmer’s Staticfile runtime currently ignores the legacy settings/config.toml overrides and sends Cache-Control: max-age=86400 for HTML. Refresh the page after a deployment; use a hard refresh if a browser retains an earlier page. Changing that TOML file alone does not change the live headers. The original management-site CSS/JS and shared assets now use versioned URLs to avoid stale layouts. The estimator uses its own no-store Python host.
