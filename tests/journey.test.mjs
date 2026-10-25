@@ -23,6 +23,13 @@ test('renovation referral retains exclusions and editable pricing',()=>{
   assert.equal(result.rows[0].id,'renovation');
   assert.match(result.rows[0].scope,/minor finish/);
 });
+test('area-only referrals preserve the default example disclosure',()=>{
+  const arrival=incomingJourney(initialState(),'?lang=el&location=Limassol');
+  assert.equal(arrival.imported,true);
+  assert.equal(arrival.servicesImported,false);
+  assert.equal(arrival.state.location,'Limassol');
+  assert.deepEqual(arrival.state.selected,['cleaning','handyman']);
+});
 test('unknown, malformed and inherited service names cannot create calculator entries',()=>{
   for(const search of ['?services=electrical','?services=constructor','?services=__proto__','?services=cleaning,bogus','?services=','?location=Unknown','?services=management&rate=0&notes=secret']){
     const before=initialState(),result=incomingJourney(before,search);

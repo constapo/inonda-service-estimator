@@ -23,7 +23,7 @@ class Links(HTMLParser):
 
 
 class NetworkTests(unittest.TestCase):
-    def test_footer_uses_company_profiles_and_excludes_unknown_tiktok_and_linkedin(self):
+    def test_footer_uses_all_four_company_profiles_and_excludes_linkedin(self):
         for lang in network.COPY:
             for site in network.HOSTS:
                 source = f'<html lang="{lang}"><head></head><body><header></header><main>Content</main><footer>Company</footer></body></html>'
@@ -32,7 +32,7 @@ class NetworkTests(unittest.TestCase):
                 self.assertIn('https://www.instagram.com/inondapropertymanagement/', text)
                 self.assertIn('https://www.youtube.com/@InondaLTD', text)
                 self.assertNotIn('linkedin.com', text)
-                self.assertNotIn('tiktok.com', text)
+                self.assertIn('https://www.tiktok.com/@inonda26', text)
                 self.assertLess(text.index('class="inonda-social-footer"'), text.rfind('</footer>'))
 
     def test_both_company_lines_have_visible_whatsapp_and_viber_on_every_site(self):
@@ -81,6 +81,7 @@ class NetworkTests(unittest.TestCase):
         url = network.destinations('el', 'el/property-management-limassol/index.html')['homes']
         q = parse_qs(urlsplit(url).query)
         self.assertEqual(q['location'], ['Limassol'])
+        self.assertEqual(q['services'], ['management'])
         self.assertNotIn('notes', q)
 
 

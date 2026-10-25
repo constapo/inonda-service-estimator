@@ -7,7 +7,7 @@ const paths={home:'m3 10 9-7 9 7M5 9v12h14V9M9 21v-8h6v8',building:'M4 21V4h11v1
 function icon(name){return `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[name]||paths.info}"></path></svg>`;}
 function hydrateIcons(root=document){root.querySelectorAll('i[data-icon]').forEach(el=>el.outerHTML=icon(el.dataset.icon));}
 const entry=incomingJourney(initialState(),location.search);
-let state=entry.state,example=!entry.imported,toastTimer,storageAvailable=true,saved=[];
+let state=entry.state,example=!entry.servicesImported,toastTimer,storageAvailable=true,saved=[];
 try {const entries=JSON.parse(localStorage.getItem('inonda-scenarios-v1')||'[]');saved=Array.isArray(entries)?entries.map(s=>s&&({...s,state:migrateState(s.state)})).filter(s=>s&&typeof s.name==='string'&&s.name.length<=50&&typeof s.id==='string'&&calculate(s.state).errors.length===0).slice(0,3):[];}catch{storageAvailable=false;}
 function toast(message){$('#toast').textContent=message;$('#toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').hidden=true,4500);}
 function inputField(id,key,label,value,{suffix='',min=0,max=10000,step='any'}={}){return `<label>${label}<span class="input-suffix"><input data-service="${id}" data-key="${key}" type="number" min="${min}" max="${['rate','minimum'].includes(key)?applicableValue(state,max):max}" step="${step}" value="${escape(['rate','minimum'].includes(key)?applicableValue(state,value):value)}" aria-label="${SERVICES[id].name} ${label}" inputmode="decimal"><span>${suffix}</span></span></label>`;}

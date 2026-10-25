@@ -8,11 +8,11 @@ export function incomingJourney(previous,search=''){
   const ids=requested?requested.split(','):[];
   const selected=ids.length&&ids.length<=6&&ids.every(id=>Object.hasOwn(SERVICES,id))?[...new Set(ids)]:null;
   const location=query.get('location'),validLocation=LOCATIONS.includes(location);
-  if(!selected&&!validLocation)return {state:previous,imported:false};
+  if(!selected&&!validLocation)return {state:previous,imported:false,servicesImported:false};
   const state=structuredClone(previous);
   if(selected)state.selected=selected;
   if(validLocation)state.location=location;
-  return {state,imported:true};
+  return {state,imported:true,servicesImported:Boolean(selected)};
 }
 
 const pages={maintenance:'maintenance-plans/',renovation:'home-renovation/',cleaning:'contact/#quote',handyman:'handyman-services/',landscaping:'outdoor-works/',management:'property-management-services/'};
