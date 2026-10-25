@@ -5,7 +5,8 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 ROOT = Path(os.environ.get('INONDA_ASSETS') or str(Path(__file__).resolve().parent / 'dist'))
-ASSETS = {'/': ('index.html', 'text/html; charset=utf-8'),
+ASSETS = {'/indexnow-key.txt': ('indexnow-key.txt', 'text/plain; charset=utf-8'),
+          '/': ('index.html', 'text/html; charset=utf-8'),
           '/index.html': ('index.html', 'text/html; charset=utf-8'),
           '/styles.css': ('styles.css', 'text/css; charset=utf-8'),
           '/inonda-chat.css': ('inonda-chat.css', 'text/css; charset=utf-8'),
