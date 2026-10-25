@@ -1,3 +1,4 @@
+import {getLocale} from './i18n.mjs';
 // Illustrative planning assumptions only. All monetary inputs include 19% VAT.
 export const VAT_RATE = 19;
 export const PRICING_VERSION = 2;
@@ -64,7 +65,12 @@ export function calculate(state){
   function total(recurring){const bucket=rows.filter(r=>r.recurring===recurring),base=bucket.reduce((s,r)=>s+r.base,0),buffer=base*reserve,central=base+buffer,net=central/(1+tax),taxAmount=central-net;return {base,reserve:buffer,net,tax:taxAmount,central,low:central===0?0:Math.floor(central*(1-spread)/5)*5,high:central===0?0:Math.ceil(central*(1+spread)/5)*5,visits:bucket.reduce((s,r)=>s+r.visits,0)};}
   return {errors,rows,oneOff:total(false),monthly:total(true),size,spread,reserveRate:reserve,taxRate:tax,condition,commercialFactor};
 }
-export const money=value=>new Intl.NumberFormat('en-CY',{style:'currency',currency:'EUR',minimumFractionDigits:0,maximumFractionDigits:2}).format(value);
+export const money=value=>new Intl.NumberFormat(getLocale(),{style:'currency',currency:'EUR',currencyDisplay:'narrowSymbol',minimumFractionDigits:0,maximumFractionDigits:2}).format(value).replace(/[\u200e\u200f\u061c]/g,'');
 export const range=total=>`${money(total.low)} – ${money(total.high)}`;
-export const plainNumber=value=>new Intl.NumberFormat('en-CY',{minimumFractionDigits:0,maximumFractionDigits:2}).format(value);
+export const plainNumber=value=>new Intl.NumberFormat(getLocale(),{minimumFractionDigits:0,maximumFractionDigits:2}).format(value).replace(/[\u200e\u200f\u061c]/g,'');
 export const frequencyText=row=>row.id==='management'?'monthly':FREQUENCIES.find(x=>Math.abs(x.value-row.frequency)<.00001)?.short||'one-off';
+
+// Public controls show the applicable VAT-inclusive price for the chosen property.
+export const applicableValue=(state,value)=>numeric(value)?Number((Number(value)*(state.type==='commercial'?1+COMMERCIAL_UPLIFT:1)).toFixed(4)):value;
+export const internalValue=(state,value)=>numeric(value)?Number(value)/(state.type==='commercial'?1+COMMERCIAL_UPLIFT:1):value;
+export const rateMoney=value=>new Intl.NumberFormat(getLocale(),{style:'currency',currency:'EUR',currencyDisplay:'narrowSymbol',minimumFractionDigits:0,maximumFractionDigits:4}).format(value).replace(/[\u200e\u200f\u061c]/g,'');

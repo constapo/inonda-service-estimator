@@ -63,6 +63,21 @@ class HostTests(unittest.TestCase):
         self.assertEqual(body, b'')
         self.assertEqual(int(headers['Content-Length']), len((module.ROOT / 'index.html').read_bytes()))
 
+    def test_live_search_metadata_and_sitemap_allow_public_discovery(self):
+        import xml.etree.ElementTree as ET
+        status, headers, body = self.request('/')
+        self.assertEqual(status, 200)
+        self.assertNotIn('X-Robots-Tag', headers)
+        self.assertIn(b'name="robots" content="index,follow"', body)
+        self.assertNotIn(b'noindex', body)
+        self.assertIn(b'Allow: /', self.request('/robots.txt')[2])
+        tree = ET.fromstring(self.request('/sitemap.xml')[2])
+        urls = [element.text for element in tree.iter('{http://www.sitemaps.org/schemas/sitemap/0.9}loc')]
+        self.assertEqual(len(urls), 6)
+        self.assertIn('https://www.inonda.homes/', urls)
+        for language in ['en', 'ru', 'uk', 'he', 'ro']:
+            self.assertIn('https://www.inonda.homes/?lang=' + language, urls)
+
     def test_post_cannot_change_the_website(self):
         self.assertEqual(self.request('/', method='POST')[0], 405)
 

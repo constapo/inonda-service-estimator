@@ -19,6 +19,9 @@ Wasmer is connected to the `main` branch. A commit pushed to `main` triggers a n
 | Colours, typography, spacing and mobile layout | `dist/styles.css` |
 | Default rates, service scopes, minimums and calculation rules | `dist/estimator.mjs` |
 | Form interactions, download text, saved scenarios and print layout | `dist/app.js` |
+| Six-language copy and formatting | `dist/i18n.mjs` |
+| Automated service guide | `dist/assistant.mjs` |
+| Search crawler access and language URLs | `dist/robots.txt`, `dist/sitemap.xml` |
 | Official company logo | `dist/inonda-logo.png` |
 | Public asset routes and host response rules | `server.py` and `host/server.py` |
 | Wasmer build/runtime configuration | `Anybuild`, `wasmer.toml`, `app.yaml` |
@@ -53,4 +56,8 @@ If a live update breaks the site, redeploy a previous working version from Wasme
 
 All service rates, minimums and travel inputs in `dist/estimator.mjs` include 19% VAT. Enter VAT-inclusive default prices; do not add VAT a second time. The calculator extracts the included VAT for the breakdown. Visitors can adjust their own rates and quantities without changing defaults for anyone else.
 
-Commercial facilities automatically add 20% to every selected service, including minimums and travel. Default and visitor-entered rates remain VAT-inclusive base rates. Preserve the separate commercial adjustment and included VAT breakdown.
+Commercial facilities keep the internal 20% factor on every service, including minimums and travel. The owner requested no public text about this factor. Controls and formulas show the applicable rates, including VAT; edits convert back to internal values. Do not apply the factor again to a visitor-entered applicable rate. Keep the included VAT breakdown.
+
+Design and media sources are documented in DESIGN.md. Only use media from inonda.site and inonda.org. The local automated assistant is in dist/assistant.mjs; service questions, contact details and current-budget answers can be edited there. It uses no AI API, collects no leads and sends no messages.
+
+The owner explicitly authorized removing noindex/nofollow for the live website. Preserve index/follow metadata, crawlable robots.txt, the six-language sitemap and per-language canonical/hreflang links. Greek is the default, and Hebrew must retain RTL support. Localized labels must never change stored option values or calculation totals.
