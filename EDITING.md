@@ -61,3 +61,11 @@ Commercial facilities keep the internal 20% factor on every service, including m
 Design and media sources are documented in DESIGN.md. Only use media from inonda.site and inonda.org. The local automated assistant is in dist/assistant.mjs; service questions, contact details and current-budget answers can be edited there. It uses no AI API, collects no leads and sends no messages.
 
 The owner explicitly authorized removing noindex/nofollow for the live website. Preserve index/follow metadata, crawlable robots.txt, the six-language sitemap and per-language canonical/hreflang links. Greek is the default, and Hebrew must retain RTL support. Localized labels must never change stored option values or calculation totals.
+
+## Coordinated website updates
+
+The owner authorized connecting all three INONDA websites. Property management is in constapo/inonda-website (inonda.site); maintenance, repairs and renovation are in constapo/inonda-cy-website (inonda.org); estimates are in this repository (inonda.homes). All three main branches deploy automatically on Wasmer.
+
+Keep tools/inonda_network.py and tools/network-copy.json synchronized between these repositories. Run python tools/inonda_network.py site, org or homes in the appropriate repository, then commit the generated public files. The inonda.org builder also applies the network component on rebuild. Links preserve all six language choices.
+
+The estimator accepts only allowlisted services and named areas in URL parameters. Saved scenarios, notes, prices and contact details stay local and are not transferred between domains. Detailed service links in dist/journey.mjs point back to the relevant company website. Run node --test tests/*.test.mjs and python -m unittest discover -s tests -p 'test_*.py' before deploying.

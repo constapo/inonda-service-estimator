@@ -54,3 +54,11 @@ Greek is the default. English, Russian, Ukrainian, Hebrew and Romanian are avail
 Translations are in dist/i18n.mjs. The private repository and server configuration remain protected, while browser-delivered JavaScript is naturally readable by visitors. The commercial pricing factor is omitted from public text; it is not a secret credential.
 
 Book an inspection directs visitors to contact the company; the contact-section booking button calls Irina. The stated process is call, property inspection, then written offer. INONDA LTD registration HE490415, all-Cyprus coverage, published address/email and minimum six-month labour workmanship warranty appear in the footer and guide. These details come from the company website and owner instructions.
+
+## Shared chatbot and contact icons
+
+The same automated INONDA service and request guide is installed on all three websites. Source: tools/inonda_chat.js, tools/inonda_chat.css, tools/chat-copy.json and tools/chat-ui.json. Keep these copies synchronized alongside the network generator. It supports six languages, service combinations, referrals and a guided request draft. On inonda.homes it can explain the actual current budget. Visitor messages stay in page memory; no AI service or shared conversation database is configured.
+
+Visitors review a request before opening a WhatsApp or email draft. Viber buttons open the selected person’s chat; the visitor can copy their visible request. No message is sent automatically. Original communication icons are self-hosted; see BRAND-ASSETS.md.
+
+Company footer social profiles are in tools/social-links.json. Facebook and Instagram use the owner’s previously supplied company URLs. TikTok is supported by the generator and appears automatically when its exact company URL is supplied in that file; do not guess its handle. Keep the configuration synchronized across all three repositories. LinkedIn is excluded by the owner.
