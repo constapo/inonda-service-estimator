@@ -21,3 +21,5 @@
 - The owner explicitly authorized live search indexing and removal of noindex/nofollow. Preserve robots.txt, sitemap.xml, canonical/hreflang and index/follow metadata.
 - Support Greek (default), English, Russian, Ukrainian, Hebrew (RTL) and Romanian. Preserve numeric/internal option values while translating labels. Locales must not change calculation amounts. Keep current-page questions and visitor-written notes unaltered by translation.
 - Company registration HE490415; all-Cyprus service; minimum six-month written workmanship warranty on labour per the company website. The working process is call, inspection, then written offer. Book-an-inspection buttons arrange contact rather than claiming a confirmed booking.
+
+- Preserve the page-level translate=no / notranslate markers: the owner’s Chrome profile otherwise overlays machine translation on the built-in locales. These markers are separate from search indexing and must not reintroduce noindex.
