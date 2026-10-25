@@ -28,8 +28,8 @@ class NetworkTests(unittest.TestCase):
             for site in network.HOSTS:
                 source = f'<html lang="{lang}"><head></head><body><header></header><main>Content</main><footer>Company</footer></body></html>'
                 text = network.enhance_html(source, site)
-                self.assertIn('https://www.facebook.com/profile.php?id=61590581181157', text)
-                self.assertIn('https://www.instagram.com/inondapropertymanagement/', text)
+                self.assertIn('https://www.facebook.com/inondalimited', text)
+                self.assertIn('https://www.instagram.com/inondaltd', text)
                 self.assertIn('https://www.youtube.com/@InondaLTD', text)
                 self.assertNotIn('linkedin.com', text)
                 self.assertIn('https://www.tiktok.com/@inonda26', text)
