@@ -23,12 +23,28 @@ html[lang=ru] .hero-side h1,html[lang=uk] .hero-side h1,html[lang=ro] .hero-side
 .detail-service-link{display:inline-block;color:var(--blue);font-size:12px;line-height:1.6;margin-top:12px;border-bottom:1px solid #9bbcd2;padding-bottom:3px}.detail-service-link:hover{color:var(--navy)}
 
 
-/* INONDA FUTURE — estimator visual refinement; calculation logic and logo untouched. */
+/* INONDA FUTURE — presentation only; calculation logic and assets preserved. */
 :root{--blue:#0077b6;--navy:#023e8a;--ink:#0b2740;--muted:#526f82;--line:#d5e6ef;--pale:#edf7fc;--bg:#fff}
 body{background:linear-gradient(180deg,#f3faff 0%,#fff 46%);color:var(--ink)}
-h1,h2,h3{letter-spacing:-.025em}
-button,a,input,select,textarea{transition:box-shadow .2s ease,border-color .2s ease,background-color .2s ease}
-:is(input,select,textarea):focus-visible{outline:3px solid #00a8cc;outline-offset:2px}
-:is(.card,.panel,.service-card,.summary){box-shadow:0 14px 40px rgba(2,62,138,.07);border-radius:18px}
-/* Preserve image, logo and contact-icon dimensions defined by the existing design. */
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+.site-header{border-bottom:1px solid var(--line)}
+.hero-side{background:linear-gradient(145deg,#071d35,#023e8a)}
+.planning-notice{background:var(--pale);border:1px solid var(--line);border-radius:16px;padding:20px}
+.panel{border-radius:0;box-shadow:none}
+.property-type{border-radius:14px;background:#fff}
+.property-type.selected{background:var(--navy)}
+.service-card{border-radius:16px;box-shadow:0 8px 24px rgba(2,62,138,.06)}
+.service-card.selected{border-color:var(--navy);box-shadow:0 0 0 2px var(--navy)}
+.service-card h3{font-weight:600}
+.service-check{border-radius:6px}
+.service-detail{border-radius:16px}
+.detail-top{border-start-start-radius:15px;border-start-end-radius:15px}
+input:not([type=range]),select,textarea{border-radius:10px}
+input[aria-invalid=true]{border-color:#ab352d}
+.button{border-radius:10px;white-space:normal}
+.estimate-card{border-radius:22px;background:linear-gradient(155deg,#071d35,#023e8a);box-shadow:0 18px 48px rgba(2,62,138,.18)}
+.total-value,.line-item>span:last-child,.detail-top>span{font-variant-numeric:tabular-nums}
+.total-value{overflow-wrap:anywhere}
+:is(a,button,input,select,textarea,summary):focus-visible{outline:3px solid #0077b6;outline-offset:4px;box-shadow:0 0 0 2px #fff}
+@media(hover:hover) and (pointer:fine){.property-type,.service-card,.button{transition:background-color .2s ease,border-color .2s ease,box-shadow .2s ease}.property-type:not(.selected):hover{background:var(--pale);border-color:var(--blue)}.service-card:hover{box-shadow:0 10px 30px rgba(2,62,138,.13)}.service-card.selected:hover{box-shadow:0 0 0 2px var(--navy)}}
+@media(max-width:760px){.planning-notice{padding:16px}.estimate-card{padding:24px 20px}.section-caption{white-space:normal;text-align:end}.property-type{padding:16px 12px}.service-card-body{padding:14px 12px}.save-row{flex-wrap:wrap}.save-row>input{flex-basis:180px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}.service-card:hover .service-photo{transform:none}}
