@@ -30,5 +30,5 @@ h1,h2,h3{letter-spacing:-.025em}
 button,a,input,select,textarea{transition:box-shadow .2s ease,border-color .2s ease,background-color .2s ease}
 :is(input,select,textarea):focus-visible{outline:3px solid #00a8cc;outline-offset:2px}
 :is(.card,.panel,.service-card,.summary){box-shadow:0 14px 40px rgba(2,62,138,.07);border-radius:18px}
-img{height:auto;max-width:100%}
+/* Preserve image, logo and contact-icon dimensions defined by the existing design. */
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
