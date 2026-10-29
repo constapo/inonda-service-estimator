@@ -10,13 +10,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Confirm redesign changes only CSS and documentation
+      - name: Confirm redesign and SEO changes preserve content and logic
         shell: bash
         run: |
           set -euo pipefail
           git diff --name-only origin/main...HEAD > /tmp/changed-files.txt
           cat /tmp/changed-files.txt
-          if grep -Ev '^(public/assets/site\.css|dist/styles\.css|docs/INONDA_FUTURE_SEO\.md|\.github/workflows/inonda-future-guard\.yml)$' /tmp/changed-files.txt; then
+          if grep -Ev '^(public/assets/site\.css|dist/styles\.css|dist/index\.html|dist/sitemap\.xml|docs/INONDA_FUTURE_SEO\.md|\.github/workflows/inonda-future-guard\.yml)$' /tmp/changed-files.txt; then
             echo 'Unexpected changes to website content or logic'; exit 1
           fi
       - name: Check CSS braces and mandatory reduced-motion handling
@@ -49,4 +49,23 @@ jobs:
                   i+=1
               assert depth==0 and not in_comment and not in_quote, f'Incomplete CSS in {p}'
               print(f'{p}: structural checks passed')
+          PY
+      - name: Preserve visible estimator content and validate language sitemap
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+          import xml.etree.ElementTree as ET
+          before = subprocess.check_output(['git', 'show', 'origin/main:dist/index.html'], text=True)
+          after = Path('dist/index.html').read_text()
+          assert before.split('</head>', 1)[1] == after.split('</head>', 1)[1], 'Visible content changed'
+          ns = {'s': 'http://www.sitemaps.org/schemas/sitemap/0.9', 'h': 'http://www.w3.org/1999/xhtml'}
+          root = ET.parse('dist/sitemap.xml').getroot()
+          expected = {lang: 'https://www.inonda.homes/' + ('' if lang == 'el' else '?lang=' + lang) for lang in ['el', 'en', 'ru', 'uk', 'he', 'ro']}
+          assert {node.find('s:loc', ns).text for node in root} == set(expected.values())
+          expected['x-default'] = expected['el']
+          for node in root:
+              links = {a.attrib['hreflang']: a.attrib['href'] for a in node.findall('h:link', ns)}
+              assert links == expected, 'Missing or inconsistent language alternates'
+          print('Visible content preserved; all language sitemap alternates verified')
           PY
