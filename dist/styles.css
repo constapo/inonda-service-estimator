@@ -21,3 +21,30 @@ html[lang=ru] .hero-side h1,html[lang=uk] .hero-side h1,html[lang=ro] .hero-side
 @media(max-width:760px){body{padding-bottom:86px}.mobile-estimate{height:86px;right:82px;left:0;padding:10px 12px;gap:8px}.mobile-estimate>span:first-child{min-width:0;flex:1}.mobile-estimate>span:last-child{font-size:10px;max-width:65px;flex-shrink:0}.mobile-estimate small{font-size:9px;line-height:1.4}.mobile-estimate strong{font-size:16px;line-height:1.2}.chat-launcher{bottom:0;right:0;left:auto;width:82px;height:86px;min-height:86px;padding:9px 5px;flex-direction:column;justify-content:center;gap:4px;border:0;border-left:1px solid #d5dfe4;box-shadow:none}.chat-launcher img{width:34px;height:27px}.chat-launcher span{max-width:72px;line-height:1.25;text-align:center;font-size:10px}.assistant-dialog{bottom:103px;max-height:calc(100svh - 125px)}html[dir=rtl] .chat-launcher{left:0;right:auto;border-left:0;border-right:1px solid #d5dfe4}html[dir=rtl] .mobile-estimate{left:82px;right:0}.toast{bottom:100px}}
 
 .detail-service-link{display:inline-block;color:var(--blue);font-size:12px;line-height:1.6;margin-top:12px;border-bottom:1px solid #9bbcd2;padding-bottom:3px}.detail-service-link:hover{color:var(--navy)}
+
+
+/* INONDA FUTURE — presentation only; calculation logic and assets preserved. */
+:root{--blue:#0077b6;--navy:#023e8a;--ink:#0b2740;--muted:#526f82;--line:#d5e6ef;--pale:#edf7fc;--bg:#fff}
+body{background:linear-gradient(180deg,#f3faff 0%,#fff 46%);color:var(--ink)}
+.site-header{border-bottom:1px solid var(--line)}
+.hero-side{background:linear-gradient(145deg,#071d35,#023e8a)}
+.planning-notice{background:var(--pale);border:1px solid var(--line);border-radius:16px;padding:20px}
+.panel{border-radius:0;box-shadow:none}
+.property-type{border-radius:14px;background:#fff}
+.property-type.selected{background:var(--navy)}
+.service-card{border-radius:16px;box-shadow:0 8px 24px rgba(2,62,138,.06)}
+.service-card.selected{border-color:var(--navy);box-shadow:0 0 0 2px var(--navy)}
+.service-card h3{font-weight:600}
+.service-check{border-radius:6px}
+.service-detail{border-radius:16px}
+.detail-top{border-start-start-radius:15px;border-start-end-radius:15px}
+input:not([type=range]),select,textarea{border-radius:10px}
+input[aria-invalid=true]{border-color:#ab352d}
+.button{border-radius:10px;white-space:normal}
+.estimate-card{border-radius:22px;background:linear-gradient(155deg,#071d35,#023e8a);box-shadow:0 18px 48px rgba(2,62,138,.18)}
+.total-value,.line-item>span:last-child,.detail-top>span{font-variant-numeric:tabular-nums}
+.total-value{overflow-wrap:anywhere}
+:is(a,button,input,select,textarea,summary):focus-visible{outline:3px solid #0077b6;outline-offset:4px;box-shadow:0 0 0 2px #fff}
+@media(hover:hover) and (pointer:fine){.property-type,.service-card,.button{transition:background-color .2s ease,border-color .2s ease,box-shadow .2s ease}.property-type:not(.selected):hover{background:var(--pale);border-color:var(--blue)}.service-card:hover{box-shadow:0 10px 30px rgba(2,62,138,.13)}.service-card.selected:hover{box-shadow:0 0 0 2px var(--navy)}}
+@media(max-width:760px){.planning-notice{padding:16px}.estimate-card{padding:24px 20px}.section-caption{white-space:normal;text-align:end}.property-type{padding:16px 12px}.service-card-body{padding:14px 12px}.save-row{flex-wrap:wrap}.save-row>input{flex-basis:180px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}.service-card:hover .service-photo{transform:none}}

@@ -68,7 +68,17 @@ class HostTests(unittest.TestCase):
         status, headers, body = self.request('/')
         self.assertEqual(status, 200)
         self.assertNotIn('X-Robots-Tag', headers)
-        self.assertIn(b'name="robots" content="index,follow"', body)
+        from html.parser import HTMLParser
+        class RobotsParser(HTMLParser):
+            directives = set()
+            def handle_starttag(self, tag, attrs):
+                attrs = dict(attrs)
+                if tag == 'meta' and attrs.get('name', '').lower() == 'robots':
+                    self.directives.update(part.strip().lower() for part in attrs.get('content', '').split(','))
+        parser = RobotsParser()
+        parser.feed(body.decode('utf-8'))
+        self.assertTrue({'index', 'follow'} <= parser.directives)
+        self.assertFalse({'noindex', 'nofollow', 'none'} & parser.directives)
         self.assertNotIn(b'noindex', body)
         self.assertIn(b'Allow: /', self.request('/robots.txt')[2])
         tree = ET.fromstring(self.request('/sitemap.xml')[2])

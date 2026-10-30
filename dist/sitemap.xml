@@ -1,9 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<url><loc>https://www.inonda.homes/</loc></url>
-<url><loc>https://www.inonda.homes/?lang=en</loc></url>
-<url><loc>https://www.inonda.homes/?lang=ru</loc></url>
-<url><loc>https://www.inonda.homes/?lang=uk</loc></url>
-<url><loc>https://www.inonda.homes/?lang=he</loc></url>
-<url><loc>https://www.inonda.homes/?lang=ro</loc></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://www.inonda.homes/</loc>
+    <xhtml:link rel="alternate" hreflang="el" href="https://www.inonda.homes/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.inonda.homes/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.inonda.homes/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://www.inonda.homes/?lang=uk"/>
+    <xhtml:link rel="alternate" hreflang="he" href="https://www.inonda.homes/?lang=he"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.inonda.homes/?lang=ro"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.inonda.homes/"/>
+  </url>
+  <url>
+    <loc>https://www.inonda.homes/?lang=en</loc>
+    <xhtml:link rel="alternate" hreflang="el" href="https://www.inonda.homes/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.inonda.homes/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.inonda.homes/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://www.inonda.homes/?lang=uk"/>
+    <xhtml:link rel="alternate" hreflang="he" href="https://www.inonda.homes/?lang=he"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.inonda.homes/?lang=ro"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.inonda.homes/"/>
+  </url>
+  <url>
+    <loc>https://www.inonda.homes/?lang=ru</loc>
+    <xhtml:link rel="alternate" hreflang="el" href="https://www.inonda.homes/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.inonda.homes/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.inonda.homes/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://www.inonda.homes/?lang=uk"/>
+    <xhtml:link rel="alternate" hreflang="he" href="https://www.inonda.homes/?lang=he"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.inonda.homes/?lang=ro"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.inonda.homes/"/>
+  </url>
+  <url>
+    <loc>https://www.inonda.homes/?lang=uk</loc>
+    <xhtml:link rel="alternate" hreflang="el" href="https://www.inonda.homes/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.inonda.homes/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.inonda.homes/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://www.inonda.homes/?lang=uk"/>
+    <xhtml:link rel="alternate" hreflang="he" href="https://www.inonda.homes/?lang=he"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.inonda.homes/?lang=ro"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.inonda.homes/"/>
+  </url>
+  <url>
+    <loc>https://www.inonda.homes/?lang=he</loc>
+    <xhtml:link rel="alternate" hreflang="el" href="https://www.inonda.homes/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.inonda.homes/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.inonda.homes/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://www.inonda.homes/?lang=uk"/>
+    <xhtml:link rel="alternate" hreflang="he" href="https://www.inonda.homes/?lang=he"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.inonda.homes/?lang=ro"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.inonda.homes/"/>
+  </url>
+  <url>
+    <loc>https://www.inonda.homes/?lang=ro</loc>
+    <xhtml:link rel="alternate" hreflang="el" href="https://www.inonda.homes/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.inonda.homes/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://www.inonda.homes/?lang=ru"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://www.inonda.homes/?lang=uk"/>
+    <xhtml:link rel="alternate" hreflang="he" href="https://www.inonda.homes/?lang=he"/>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://www.inonda.homes/?lang=ro"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.inonda.homes/"/>
+  </url>
 </urlset>
