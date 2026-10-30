@@ -37,7 +37,11 @@ class HostTests(unittest.TestCase):
         for path, (file_name, content_type) in module.ASSETS.items():
             status, headers, body = self.request(path)
             self.assertEqual(status, 200, path)
-            self.assertEqual(body, (module.ROOT / file_name).read_bytes())
+            source = (module.ROOT / file_name).read_bytes()
+            if file_name == 'index.html':
+                self.assertEqual(body.split(b'</head>', 1)[1], source.split(b'</head>', 1)[1])
+            else:
+                self.assertEqual(body, source)
             self.assertEqual(headers['Content-Type'], content_type)
             self.assertNotIn('WWW-Authenticate', headers)
             self.assertIn('no-store', headers['Cache-Control'])
@@ -61,7 +65,32 @@ class HostTests(unittest.TestCase):
         status, headers, body = self.request('/', method='HEAD')
         self.assertEqual(status, 200)
         self.assertEqual(body, b'')
-        self.assertEqual(int(headers['Content-Length']), len((module.ROOT / 'index.html').read_bytes()))
+        self.assertEqual(int(headers['Content-Length']), len(self.request('/')[2]))
+
+    def test_localized_previews_and_canonicals_without_javascript(self):
+        import html
+        original = (module.ROOT / 'index.html').read_bytes().split(b'</head>', 1)[1]
+        for language, meta in module.SEARCH_METADATA.items():
+            query = '' if language == 'el' else '?lang=' + language
+            status, headers, body = self.request('/' + query)
+            self.assertEqual(status, 200)
+            text = body.decode('utf-8')
+            self.assertIn('<title>' + html.escape(meta['title']) + '</title>', text)
+            self.assertIn('content="' + html.escape(meta['description'], quote=True) + '"', text)
+            self.assertIn('rel="canonical" href="https://www.inonda.homes/' + query + '"', text)
+            self.assertIn('property="og:url" content="https://www.inonda.homes/' + query + '"', text)
+            self.assertIn('property="og:locale" content="' + meta['locale'] + '"', text)
+            self.assertEqual(text.count('property="og:locale:alternate"'), 5)
+            self.assertEqual(body.split(b'</head>', 1)[1], original)
+            self.assertEqual(int(headers['Content-Length']), len(body))
+            head = self.request('/' + query, method='HEAD')
+            self.assertEqual(head[2], b'')
+            self.assertEqual(head[1]['Content-Length'], headers['Content-Length'])
+
+    def test_unknown_language_and_private_query_values_are_not_reflected(self):
+        baseline = self.request('/')[2]
+        for path in ['/?lang=unknown', '/?lang=%22%3E%3Cscript%3E', '/?notes=private-note', '/?lang=&notes=private-note']:
+            self.assertEqual(self.request(path)[2], baseline)
 
     def test_live_search_metadata_and_sitemap_allow_public_discovery(self):
         import xml.etree.ElementTree as ET
@@ -94,3 +123,4 @@ class HostTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+

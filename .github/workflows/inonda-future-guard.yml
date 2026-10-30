@@ -18,7 +18,10 @@ jobs:
           changed = subprocess.check_output(['git', 'diff', '--name-only', 'origin/main...HEAD'], text=True).splitlines()
           allowed = {'public/assets/site.css', 'dist/styles.css', 'dist/sitemap.xml',
                      'docs/INONDA_FUTURE_SEO.md', '.github/workflows/inonda-future-guard.yml',
-                     'tools/inonda_network.py', 'tests/test_host.py'}
+                     'tools/inonda_network.py', 'tests/test_host.py',
+                     'server.py', 'host/server.py', 'dist/search-metadata.json',
+                     'tools/build_search_metadata.mjs',
+                     'docs/INONDA_INTERNATIONAL_VISIBILITY.md'}
           def previous(path):
               return subprocess.check_output(['git', 'show', 'origin/main:' + path], text=True)
           def normalize_versions(text):
@@ -93,5 +96,10 @@ jobs:
 
       - name: Validate estimator calculations and anonymous host
         run: |
+          cmp server.py host/server.py
+          cp dist/search-metadata.json /tmp/inonda-search-metadata.json
+          node tools/build_search_metadata.mjs
+          cmp dist/search-metadata.json /tmp/inonda-search-metadata.json
           node --test tests/*.test.mjs
           python3 -m unittest discover -s tests -p 'test_*.py'
+

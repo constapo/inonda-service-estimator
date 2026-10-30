@@ -1,0 +1,32 @@
+{
+  "el": {
+    "title": "Εκτιμητής Υπηρεσιών · INONDA LTD",
+    "description": "Σχεδιάστε τη φροντίδα του ακινήτου σας με την INONDA LTD. Δημιουργήστε εκτίμηση στην Κύπρο με 19% ΦΠΑ και καλέστε για επιθεώρηση και γραπτή προσφορά.",
+    "locale": "el_CY"
+  },
+  "en": {
+    "title": "Service Estimator · INONDA LTD",
+    "description": "Explore your property plan with INONDA LTD. Build your own estimate in Cyprus, with 19% VAT included, then call to arrange an inspection and written offer.",
+    "locale": "en_CY"
+  },
+  "ru": {
+    "title": "Калькулятор услуг · INONDA LTD",
+    "description": "Планируйте работы с INONDA LTD. Рассчитайте стоимость на Кипре с НДС 19% и позвоните для осмотра и письменного предложения.",
+    "locale": "ru_RU"
+  },
+  "uk": {
+    "title": "Калькулятор послуг · INONDA LTD",
+    "description": "Плануйте роботи з INONDA LTD. Розрахуйте вартість на Кіпрі з ПДВ 19% і зателефонуйте для огляду та письмової пропозиції.",
+    "locale": "uk_UA"
+  },
+  "he": {
+    "title": "מחשבון שירותים · INONDA LTD",
+    "description": "תכננו טיפול בנכס עם INONDA LTD. בנו הערכה בקפריסין הכוללת מע״מ 19%, והתקשרו לתיאום בדיקה והצעה כתובה.",
+    "locale": "he_IL"
+  },
+  "ro": {
+    "title": "Estimator de servicii · INONDA LTD",
+    "description": "Planifică proprietatea cu INONDA LTD. Calculează o estimare în Cipru cu TVA 19% și sună pentru inspecție și ofertă scrisă.",
+    "locale": "ro_RO"
+  }
+}
