@@ -47,6 +47,8 @@ def localize_search_metadata(body, target):
 ASSETS = {'/indexnow-key.txt': ('indexnow-key.txt', 'text/plain; charset=utf-8'),
           '/': ('index.html', 'text/html; charset=utf-8'),
           '/index.html': ('index.html', 'text/html; charset=utf-8'),
+          '/future-design.css': ('future-design.css', 'text/css; charset=utf-8'),
+          '/future-ui.js': ('future-ui.js', 'text/javascript; charset=utf-8'),
           '/styles.css': ('styles.css', 'text/css; charset=utf-8'),
           '/inonda-chat.css': ('inonda-chat.css', 'text/css; charset=utf-8'),
           '/inonda-chat.js': ('inonda-chat.js', 'text/javascript; charset=utf-8'),
