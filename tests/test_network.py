@@ -23,6 +23,22 @@ class Links(HTMLParser):
 
 
 class NetworkTests(unittest.TestCase):
+    def test_language_row_uses_published_translations_and_safe_fallback(self):
+        source = '<html lang="en"><head><link href="https://www.inonda.org/ro/guides/" hreflang="ro" rel="alternate"></head><body><header></header><main>Guide</main></body></html>'
+        text = network.enhance_html(source, 'org', 'en/guides/index.html')
+        self.assertLess(text.index('class="inonda-language-bar"'), text.index('<header'))
+        self.assertIn('href="/ro/guides/" data-golang="ro"', text)
+        self.assertIn('href="/he/" data-golang="he"', text)
+        self.assertNotIn('href="/he/guides/"', text)
+        self.assertEqual(text.count('data-golang='), 6)
+
+    def test_estimator_language_row_has_explicit_greek_choice(self):
+        source = '<html lang="en"><head></head><body><header></header><main>Estimator</main></body></html>'
+        text = network.enhance_html(source, 'homes')
+        self.assertIn('href="?lang=el" data-golang="el"', text)
+        self.assertIn('href="?lang=he" data-golang="he"', text)
+        self.assertEqual(text.count('class="inonda-language-bar"'), 1)
+
     def test_footer_uses_all_four_company_profiles_and_excludes_linkedin(self):
         for lang in network.COPY:
             for site in network.HOSTS:
