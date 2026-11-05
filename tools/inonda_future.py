@@ -4,7 +4,7 @@ import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = '20261030-2'
+VERSION = '20261105-1'
 MARKER = r'<!-- INONDA FUTURE ASSETS START -->.*?<!-- INONDA FUTURE ASSETS END -->'
 
 

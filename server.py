@@ -67,6 +67,12 @@ ASSETS = {'/indexnow-key.txt': ('indexnow-key.txt', 'text/plain; charset=utf-8')
           '/i18n.mjs': ('i18n.mjs', 'text/javascript; charset=utf-8'),
           '/assistant.mjs': ('assistant.mjs', 'text/javascript; charset=utf-8'),
           '/estimator.mjs': ('estimator.mjs', 'text/javascript; charset=utf-8'),
+          '/presentation.el.vtt': ('presentation.el.vtt', 'text/vtt; charset=utf-8'),
+          '/presentation.en.vtt': ('presentation.en.vtt', 'text/vtt; charset=utf-8'),
+          '/presentation.ru.vtt': ('presentation.ru.vtt', 'text/vtt; charset=utf-8'),
+          '/presentation.uk.vtt': ('presentation.uk.vtt', 'text/vtt; charset=utf-8'),
+          '/presentation.he.vtt': ('presentation.he.vtt', 'text/vtt; charset=utf-8'),
+          '/presentation.ro.vtt': ('presentation.ro.vtt', 'text/vtt; charset=utf-8'),
           '/inonda-logo.png': ('inonda-logo.png', 'image/png')}
 
 
@@ -79,7 +85,7 @@ class EstimatorHandler(BaseHTTPRequestHandler):
         self.send_header('X-Content-Type-Options', 'nosniff')
         self.send_header('Referrer-Policy', 'no-referrer')
         self.send_header('X-Frame-Options', 'DENY')
-        self.send_header('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://www.inonda.site https://www.inonda.org; media-src https://www.inonda.site https://www.inonda.org; connect-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'")
+        self.send_header('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://www.inonda.site https://www.inonda.org; media-src 'self' https://www.inonda.site https://www.inonda.org; connect-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'")
 
     def respond(self, status, body, content_type='text/plain; charset=utf-8'):
         self.send_response(status)

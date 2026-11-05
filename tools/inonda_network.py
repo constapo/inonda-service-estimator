@@ -18,7 +18,7 @@ from inonda_seo import enhance_seo
 ROOT = Path(__file__).resolve().parents[1]
 COPY = json.loads(Path(__file__).with_name('network-copy.json').read_text(encoding='utf-8'))
 SOCIAL = json.loads(Path(__file__).with_name('social-links.json').read_text(encoding='utf-8'))
-VERSION = '20261031-language-2'
+VERSION = '20261105-a11y-1'
 HOSTS = {'site': 'https://www.inonda.site', 'org': 'https://www.inonda.org', 'homes': 'https://www.inonda.homes'}
 
 
@@ -195,7 +195,7 @@ body[data-inonda-site=site] .hero .wrap{padding-top:calc(var(--nav-h,76px) + 114
 .inonda-network-section{box-sizing:border-box;position:relative;clear:both;padding:70px max(5.5%,22px);background:#f3f8fb;color:#102f49;font-family:Arial,sans-serif;text-align:start;border-top:1px solid #d5e3eb;border-bottom:1px solid #d5e3eb;scroll-margin-top:160px}
 .inonda-network-section *{box-sizing:border-box}
 .inonda-network-heading{max-width:950px;margin:0 0 32px}
-.inonda-network-section .inonda-network-eyebrow{color:#0077b6;font-size:11px;letter-spacing:.07em;line-height:1.6;font-weight:700;margin:0 0 18px}
+.inonda-network-section .inonda-network-eyebrow{color:#006aa3;font-size:11px;letter-spacing:.07em;line-height:1.6;font-weight:700;margin:0 0 18px}
 .inonda-network-section h2{font:400 clamp(30px,3.4vw,52px)/1.12 Arial,sans-serif;letter-spacing:-.03em;margin:0 0 22px;color:#023e8a;max-width:none}
 .inonda-network-heading>p:last-child{font-size:16px;line-height:1.7;margin:0;max-width:860px;color:#425e70}
 .inonda-network-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;max-width:1500px}
