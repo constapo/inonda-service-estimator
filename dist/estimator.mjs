@@ -7,7 +7,7 @@ export const SERVICES = {
   maintenance: {name:'Maintenance',icon:'tools',description:'Preventive checks & property upkeep',unit:'visit',scope:'Preventive inspection; repairs and parts excluded.',rate:101.15,minimum:101.15,quantity:1,frequency:0},
   renovation: {name:'Renovation',icon:'paint',description:'Refresh, refurbish & reimagine',unit:'m²',scope:'Cosmetic refresh; labour and basic finish allowance only.',rate:53.55,minimum:535.5,quantity:25,frequency:0,variant:'cosmetic'},
   cleaning: {name:'Cleaning',icon:'sparkles',description:'A fresh start, from room to room',unit:'m²',scope:'Deep clean of the selected indoor area.',rate:3.09,minimum:166.6,quantity:100,frequency:0,variant:'deep'},
-  handyman: {name:'Handyman',icon:'wrench',description:'Small fixes. A big difference.',unit:'hour',scope:'General handyman labour; materials and specialist trades excluded.',rate:41.65,minimum:83.3,quantity:3,frequency:0},
+  handyman: {name:'Handyman',icon:'wrench',description:'Maintenance-contract customers only',unit:'hour',scope:'General handyman labour; materials and specialist trades excluded.',rate:41.65,minimum:83.3,quantity:3,frequency:0},
   landscaping: {name:'Landscaping',icon:'leaf',description:'Care for your outdoor spaces',unit:'m²',scope:'Routine garden tidy; landscaping construction and waste removal excluded.',rate:1.9,minimum:95.2,quantity:50,frequency:0},
   management: {name:'Management',icon:'clipboard',description:'Ongoing coordination & peace of mind',unit:'unit',scope:'Monthly service coordination and reporting; third-party bills excluded.',rate:77.35,minimum:77.35,quantity:1,frequency:1}
 };
