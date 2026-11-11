@@ -87,8 +87,8 @@ class NetworkTests(unittest.TestCase):
 
     def test_template_enhancement_is_idempotent_and_keeps_original_content(self):
         source = '<html lang="he"><head></head><body><header></header><main><h1>Original</h1></main></body></html>'
-        first = network.enhance_html(source, 'org', 'he/handyman-services/index.html')
-        self.assertEqual(first, network.enhance_html(first, 'org', 'he/handyman-services/index.html'))
+        first = network.enhance_html(source, 'org', 'he/contract-repairs/index.html')
+        self.assertEqual(first, network.enhance_html(first, 'org', 'he/contract-repairs/index.html'))
         self.assertIn('<h1>Original</h1>', first)
         self.assertIn('services=handyman', first)
         self.assertEqual(first.count('id="inonda-network"'), 1)

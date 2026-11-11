@@ -54,7 +54,7 @@ test('duplicate services are deduplicated and all six languages keep identical a
 test('detailed service referrals stay on the correct INONDA site in every language',()=>{
   for(const lang of ['el','en','ru','uk','he','ro']){
     assert.equal(serviceDestination('management',lang),`https://www.inonda.site/${lang}/property-management-services/`);
-    assert.equal(serviceDestination('handyman',lang),`https://www.inonda.org/${lang}/handyman-services/`);
+    assert.equal(serviceDestination('handyman',lang),`https://www.inonda.org/${lang}/contract-repairs/`);
   }
   assert.equal(serviceDestination('constructor'),null);
   assert.equal(serviceDestination('maintenance','bad'),'https://www.inonda.org/el/maintenance-plans/');

@@ -15,7 +15,7 @@ export function incomingJourney(previous,search=''){
   return {state,imported:true,servicesImported:Boolean(selected)};
 }
 
-const pages={maintenance:'maintenance-plans/',renovation:'home-renovation/',cleaning:'contact/#quote',handyman:'handyman-services/',landscaping:'outdoor-works/',management:'property-management-services/'};
+const pages={maintenance:'maintenance-plans/',renovation:'home-renovation/',cleaning:'contact/#quote',handyman:'contract-repairs/',landscaping:'outdoor-works/',management:'property-management-services/'};
 export function serviceDestination(id,language='el'){
   if(!Object.hasOwn(pages,id))return null;
   const lang=['el','en','ru','uk','he','ro'].includes(language)?language:'el';
