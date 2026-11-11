@@ -28,7 +28,7 @@ test('area-only referrals preserve the default example disclosure',()=>{
   assert.equal(arrival.imported,true);
   assert.equal(arrival.servicesImported,false);
   assert.equal(arrival.state.location,'Limassol');
-  assert.deepEqual(arrival.state.selected,['cleaning','handyman']);
+  assert.deepEqual(arrival.state.selected,['cleaning','maintenance']);
 });
 test('unknown, malformed and inherited service names cannot create calculator entries',()=>{
   for(const search of ['?services=electrical','?services=constructor','?services=__proto__','?services=cleaning,bogus','?services=','?location=Unknown','?services=management&rate=0&notes=secret']){

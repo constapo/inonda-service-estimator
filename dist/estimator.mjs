@@ -17,7 +17,7 @@ export const VARIANTS = {
 };
 export const FREQUENCIES = [{value:0,label:'One-off',short:'one-off'},{value:1,label:'Monthly · 1 visit',short:'1 visit / month'},{value:2,label:'Monthly · 2 visits',short:'2 visits / month'},{value:52/12,label:'Weekly · avg. 4.33 / month',short:'weekly · monthly average'}];
 export const LOCATIONS=['Nicosia','Limassol','Larnaca','Paphos','Famagusta district','Other location in Cyprus'];
-export function initialState(){return {pricingVersion:PRICING_VERSION,type:'residential',location:'Nicosia',size:100,condition:1,uncertainty:20,reserve:0,travel:0,notes:'',selected:['cleaning','handyman'],services:Object.fromEntries(Object.entries(SERVICES).map(([id,s])=>[id,{quantity:s.quantity,rate:s.rate,minimum:s.minimum,frequency:s.frequency,variant:s.variant||''}]))};}
+export function initialState(){return {pricingVersion:PRICING_VERSION,type:'residential',location:'Nicosia',size:100,condition:1,uncertainty:20,reserve:0,travel:0,notes:'',selected:['cleaning','maintenance'],services:Object.fromEntries(Object.entries(SERVICES).map(([id,s])=>[id,{quantity:s.quantity,rate:s.rate,minimum:s.minimum,frequency:s.frequency,variant:s.variant||''}]))};}
 // Older locally saved scenarios stored VAT-exclusive rates. Convert once, without
 // changing the visitor's quantities, scope or notes, and never double-add VAT.
 export function migrateState(previous){
