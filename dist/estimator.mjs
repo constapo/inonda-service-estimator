@@ -75,5 +75,5 @@ export const applicableValue=(state,value)=>numeric(value)?Number((Number(value)
 export const internalValue=(state,value)=>numeric(value)?Number(value)/(state.type==='commercial'?1+COMMERCIAL_UPLIFT:1):value;
 export const rateMoney=value=>new Intl.NumberFormat(getLocale(),{style:'currency',currency:'EUR',currencyDisplay:'narrowSymbol',minimumFractionDigits:0,maximumFractionDigits:4}).format(value).replace(/[\u200e\u200f\u061c]/g,'');
 // Quotation-visit policy (shown to customers as text only; not part of calculate() and not wired to any distance check).
-export const QUOTATION_VISIT_FEE={amount:50,estimateBelow:1000,maxDistanceKm:10};
-export const quotationVisitFeeApplies=({estimate,outsideStrovolos,distanceKm})=>outsideStrovolos===true&&estimate<QUOTATION_VISIT_FEE.estimateBelow&&distanceKm<=QUOTATION_VISIT_FEE.maxDistanceKm;
+export const QUOTATION_VISIT_FEE={amount:50,estimateUpTo:1000,freeWithinKm:10};
+export const quotationVisitFeeApplies=({estimate,distanceKm})=>estimate<=QUOTATION_VISIT_FEE.estimateUpTo&&distanceKm>QUOTATION_VISIT_FEE.freeWithinKm;
