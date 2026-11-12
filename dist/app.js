@@ -1,7 +1,7 @@
 import {initI18n,t,getLanguage,getLocale} from './i18n.mjs';
 import {incomingJourney} from './journey.mjs';
 import {guideAnswer} from './assistant.mjs';
-import {JOBS,BOARDS,COMPLEXITY,LOCATIONS,LOCATION_KEYS,JOB_IMAGES,JOB_PAGES,DESC,MAX_QTY,MAX_SKIPS,initialState,calculate,money,range,copyText} from './estimator.mjs';
+import {JOBS,BOARDS,COMPLEXITY,PLACES,PLACE_BY_ID,findPlace,placeName,JOB_IMAGES,JOB_PAGES,DESC,MAX_QTY,MAX_SKIPS,initialState,calculate,money,range,copyText} from './estimator.mjs';
 const $=s=>document.querySelector(s),escape=value=>String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const paths={home:'m3 10 9-7 9 7M5 9v12h14V9M9 21v-8h6v8',building:'M4 21V4h11v17M15 9h5v12M8 8h3M8 12h3M8 16h3M2 21h20',calculator:'M6 3h12v18H6zM9 6h6M9 10h.01M15 10h.01M9 14h.01M15 14h.01M9 18h.01M15 18h.01',bookmark:'M6 3h12v18l-6-4-6 4z',help:'M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4M12 17h.01M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',pin:'M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 0 1 14 0ZM15 10a3 3 0 1 1-6 0 3 3 0 0 1 6 0',check:'m5 12 4 4L19 6',info:'M12 11v6M12 7h.01M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',tools:'m3 21 6-6M14 4l6 6M13 5l4-3 5 5-3 4M12 12l8 8-2 2-8-8M3 3l4 1 2 4-2 2-4-3z',wrench:'M14 4a6 6 0 0 0-7 8L2 17l5 5 5-5a6 6 0 0 0 8-7l-4 4-4-4z',paint:'M4 3h14v7H4zM18 6h3v7h-9v4M10 17h4v5h-4z',sparkles:'m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5zM21 2v4M19 4h4',leaf:'M20 3C8 2 2 7 5 15c3 8 16 7 15-12ZM4 21l12-13',clipboard:'M8 4H5v18h14V4h-3M8 2h8v5H8zM8 12h8M8 16h6',sliders:'M4 7h16M4 17h16M8 4v6M16 14v6',chevron:'m6 9 6 6 6-6',plus:'M12 5v14M5 12h14',download:'M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5',printer:'M6 8V2h12v6M6 18H3V8h18v10h-3M6 14h12v8H6zM17 11h.01',shield:'m12 2 8 3v6c0 5-8 11-8 11S4 16 4 11V5zM8 11l3 3 5-6',close:'m6 6 12 12M6 18 18 6',trash:'M3 6h18M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7'};
 function icon(name){return `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[name]||paths.info}"></path></svg>`;}
@@ -31,22 +31,27 @@ function skipMarkup(){const on=state.skip.on;return `<div class="bp-job bp-skip 
 function renderStatic(){
   document.querySelectorAll('[data-c]').forEach(el=>el.textContent=c(el.dataset.c));
   document.querySelectorAll('.bp-seg [data-type]').forEach(b=>{b.textContent=c(b.dataset.type);b.setAttribute('aria-pressed',String(b.dataset.type===state.type));});
-  $('#bp-location').innerHTML=options(LOCATIONS,state.location,l=>c(LOCATION_KEYS[l]));
+  const lang=getLanguage(),other=lang==='el'?'en':'el';
+  $('#bp-places').innerHTML=PLACES.map(p=>`<option value="${escape(lang==='el'?p.el:p.en)}">${escape(other==='el'?p.el:p.en)}</option>`).join('');
+  const input=$('#bp-place');input.placeholder=c('placeHint');if(document.activeElement!==input)input.value=placeLabel();
   $('#bp-jobs').innerHTML=Object.keys(JOBS).map(jobMarkup).join('')+skipMarkup();
-  const lang=getLanguage();
   $('#bp-grid').innerHTML=Object.keys(JOBS).map(id=>`<article class="bp-tile"><img src="https://www.inonda.org/assets/img/${JOB_IMAGES[id]}-sm.webp" alt="" loading="lazy" decoding="async" width="480" height="320"><div><h3>${escape(c(id))}</h3><p>${escape(DESC[lang]?.[id]||DESC.en[id])}</p><a href="https://www.inonda.org/${lang}/${JOB_PAGES[id]}" target="_blank" rel="noopener">${escape(c('more'))} <span aria-hidden="true">↗</span></a></div></article>`).join('');
   update();
 }
+function placeLabel(){return state.place?.id?placeName(state.place,getLanguage()):state.place?c('myPlace'):'';}
+function whereNote(r){const n=$('#bp-where-note');n.classList.remove('bp-warn');if(r.travel){n.textContent=c('kmFrom').replace('{km}',r.travel.km)+' · '+(r.travel.amount?c('travel')+' '+money(r.travel.amount):c('travelFree'));return;}if(r.errors.includes('This location is outside our service area.')){n.textContent=c('outside');n.classList.add('bp-warn');return;}n.textContent=c('locNote');}
 function lineMarkup(name,sub,price){return `<li><span>${escape(name)}<small>${escape(sub)}</small></span><span>${price}</span></li>`;}
 function update(){
   const r=calculate(state),valid=!r.errors.length,has=r.rows.length>0;
   document.querySelectorAll('[data-price]').forEach(el=>{const row=r.rows.find(x=>x.id===el.dataset.price);el.textContent=row&&valid?range(row):'';});
   $('#bp-skip-price').textContent=r.skip&&valid?range(r.skip):'';
-  const total=has&&valid?range(r.oneOff):'—';
-  $('#bp-total').textContent=total;$('#mobile-total').textContent=total;$('.bp-mobile').hidden=!has;
+  const ready=has&&valid&&!r.needsPlace,total=ready?range(r.oneOff):'—';
+  $('#bp-total').textContent=total;$('#mobile-total').textContent=ready?total:c('needPlace');$('.bp-mobile').hidden=!has;
+  $('.bp-total').classList.toggle('bp-waiting',has&&r.needsPlace);$('.bp-total small').textContent=has&&r.needsPlace?c('needPlace'):c('total');
+  $('.bp-where').classList.toggle('bp-attention',has&&r.needsPlace);whereNote(r);
   if(!valid){$('#bp-lines').innerHTML=`<li class="bp-error" role="alert">${escape(r.errors[0])}</li>`;}
-  else $('#bp-lines').innerHTML=has?r.rows.map(row=>lineMarkup(c(row.id),`${c(row.variant)}${row.board&&row.board!=='bstd'?' · '+c(row.board):''} · ${row.qty} ${unit(row.id)}`,range(row))).join('')+(r.skip?lineMarkup(c('skip'),`${r.skip.qty} ${c('u_skip')}`,range(r.skip)):''):`<li class="bp-empty">${escape(c('empty'))}</li>`;
-  for(const id of ['print','bp-clear'])$('#'+id).disabled=!has;
+  else $('#bp-lines').innerHTML=has?r.rows.map(row=>lineMarkup(c(row.id),`${c(row.variant)}${row.board&&row.board!=='bstd'?' · '+c(row.board):''} · ${row.qty} ${unit(row.id)}`,range(row))).join('')+(r.skip?lineMarkup(c('skip'),`${r.skip.qty} ${c('u_skip')}`,range(r.skip)):'')+(r.travel?lineMarkup(c('travel'),`${placeLabel()} · ${c('kmFrom').replace('{km}',r.travel.km)}`,r.travel.amount?money(r.travel.amount):c('travelFree')):''):`<li class="bp-empty">${escape(c('empty'))}</li>`;
+  $('#print').disabled=!ready;$('#bp-clear').disabled=!has;$('#bp-book').classList.toggle('bp-disabled',!ready);
   $('#bp-book').href='https://wa.me/35794091616?text='+encodeURIComponent(planText(r));
   persist();
   return r;
@@ -55,8 +60,8 @@ function planText(r=calculate(state)){
   const lines=[c('msg')];
   for(const row of r.rows)lines.push(`• ${c(row.id)} – ${c(row.variant)}${row.board&&row.board!=='bstd'?', '+c(row.board):''}, ${row.qty} ${unit(row.id)}${state.jobs[row.id].cx!=='standard'?', '+c(state.jobs[row.id].cx):''}`);
   if(r.skip)lines.push(`• ${c('skip')} – ${r.skip.qty} ${c('u_skip')}`);
-  lines.push(`${c('ptype')}: ${c(state.type)}`,`${c('location')}: ${c(LOCATION_KEYS[state.location])}`);
-  if(r.rows.length&&!r.errors.length)lines.push(`${c('total')}: ${range(r.oneOff).replace(/[\u2066\u2069]/g,'')} (${c('incl')})`);
+  lines.push(`${c('ptype')}: ${c(state.type)}`,`${c('placeLabel')}: ${placeLabel()||'—'}${r.travel?' ('+c('kmFrom').replace('{km}',r.travel.km)+')':''}${state.place&&!state.place.id?' https://maps.google.com/?q='+state.place.lat+','+state.place.lon:''}`);
+  if(r.rows.length&&!r.errors.length&&!r.needsPlace)lines.push(`${c('total')}: ${range(r.oneOff).replace(/[\u2066\u2069]/g,'')} (${c('incl')})`);
   return lines.join('\n');
 }
 function toggleJob(id){state.selected=state.selected.includes(id)?state.selected.filter(x=>x!==id):[...state.selected,id];renderStatic();const head=$(`.bp-job[data-id="${id}"] .bp-job-head`);head?.focus();if(state.selected.includes(id))$(`.bp-job[data-id="${id}"] [data-k="qty"]`)?.scrollIntoView({block:'nearest',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}
@@ -70,7 +75,12 @@ $('#bp-jobs').addEventListener('input',event=>{const el=event.target;
   if(k==='variant'){renderStatic();$(`.bp-job[data-id="${id}"] [data-k="variant"]`)?.focus();}else update();
 });
 document.querySelectorAll('.bp-seg [data-type]').forEach(b=>b.addEventListener('click',()=>{state.type=b.dataset.type;renderStatic();}));
-$('#bp-location').addEventListener('change',event=>{state.location=event.target.value;update();});
+function choosePlace(text){const p=findPlace(text);if(p){state.place={id:p.id};}else if(!text.trim()){state.place=null;}else{update();$('#bp-where-note').textContent=c('notListed');$('#bp-where-note').classList.add('bp-warn');return false;}update();return true;}
+$('#bp-place').addEventListener('input',event=>{const p=findPlace(event.target.value);if(p||!event.target.value.trim())choosePlace(event.target.value);});
+$('#bp-place').addEventListener('change',event=>{if(choosePlace(event.target.value))event.target.value=placeLabel();});
+$('#bp-locate').addEventListener('click',()=>{const note=$('#bp-where-note');if(!navigator.geolocation){note.textContent=c('locFail');return;}note.textContent=c('locating');
+  navigator.geolocation.getCurrentPosition(pos=>{state.place={lat:Math.round(pos.coords.latitude*1000)/1000,lon:Math.round(pos.coords.longitude*1000)/1000};$('#bp-place').value=placeLabel();update();},()=>{note.textContent=c('locFail');note.classList.add('bp-warn');},{enableHighAccuracy:false,timeout:10000,maximumAge:600000});});
+$('#bp-book').addEventListener('click',event=>{if($('#bp-book').classList.contains('bp-disabled')){event.preventDefault();$('#bp-place').focus();$('.bp-where').scrollIntoView({block:'center',behavior:'smooth'});}});
 $('#bp-clear').addEventListener('click',()=>{state.selected=[];renderStatic();$('#bp-title').scrollIntoView({behavior:'smooth'});});
 $('#print').addEventListener('click',()=>{const r=calculate(state);if(r.errors.length||!r.rows.length)return;$('#print-summary').innerHTML=`<img src="./inonda-logo.png" alt="INONDA LTD" width="130"><h2>${escape(c('title'))}</h2><pre>${escape(planText(r).split('\n').slice(1).join('\n'))}</pre><p>${escape(c('disclaimer'))}</p><p>Irina: +357 94 091 616 · Constantin: +357 94 091 613 · inonda2026@outlook.com</p>`;window.print();});
 $('#how-button').addEventListener('click',()=>{$('#site-menu').close();$('#how-dialog').showModal();});$('#close-dialog').addEventListener('click',()=>$('#how-dialog').close());$('#how-dialog').addEventListener('click',event=>{if(event.target===$('#how-dialog')){const box=$('#how-dialog').getBoundingClientRect();if(event.clientX<box.left||event.clientX>box.right||event.clientY<box.top||event.clientY>box.bottom)$('#how-dialog').close();}});
@@ -87,5 +97,5 @@ function motionState(){const playing=!heroVideo.paused;motionButton.textContent=
 motionButton.addEventListener('click',async()=>{if(!heroVideo.paused){heroVideo.pause();return;}if(!heroVideo.src)heroVideo.src=heroVideo.dataset.src;try{await heroVideo.play();}catch{toast('The film could not start. You can still explore all services below.');}});
 heroVideo.addEventListener('playing',()=>{$('#hero-poster').hidden=true;});heroVideo.addEventListener('error',()=>{$('#hero-poster').hidden=false;motionState();});heroVideo.addEventListener('play',motionState);heroVideo.addEventListener('pause',motionState);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)heroVideo.pause();});
-document.addEventListener('inonda:guide-question',event=>{const answer=guideAnswer(event.detail.question,{result:calculate(state),property:state.type,location:state.location});event.detail.answer={...answer,text:t(answer.text),label:t(answer.label)};});
+document.addEventListener('inonda:guide-question',event=>{const answer=guideAnswer(event.detail.question,{result:calculate(state),property:state.type,place:placeLabel()});event.detail.answer={...answer,text:t(answer.text),label:t(answer.label)};});
 document.addEventListener('inonda:add-services',event=>{const ids=event.detail?.services;if(!Array.isArray(ids))return;const valid=ids.filter(id=>Object.hasOwn(JOBS,id));if(!valid.length)return;state.selected=[...new Set([...state.selected,...valid])];renderStatic();});

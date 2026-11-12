@@ -33,14 +33,13 @@ export const LOCATION_KEYS={'Nicosia':'nicosia','Limassol':'limassol','Larnaca':
 export const SERVICES=JOBS;
 export const JOB_IMAGES={flooring:'tiling',kitchen:'kitchen',bathroom:'bathroom',painting:'painting',gypsum:'renovation',plumbing:'plumbing',electrical:'electrical',roofing:'roof',doors:'carpentry',outdoor:'outdoor',aluminium:'aluminium',hpl:'hpl',decor:'decor',renovation:'renovation'};
 export const JOB_PAGES={flooring:'flooring-tiling/',kitchen:'kitchen-renovation/',bathroom:'bathroom-renovation/',painting:'painting-plastering-gypsum/',gypsum:'painting-plastering-gypsum/',plumbing:'plumbing-services/',electrical:'electrical-services/',roofing:'roof-waterproofing-damp/',doors:'doors-windows-carpentry/',outdoor:'outdoor-works/',aluminium:'aluminium-works/',hpl:'hpl-cladding/',decor:'decorative-panels/',renovation:'home-renovation/'};
-export function initialState(){return {type:'residential',location:'Nicosia',selected:[],skip:{on:true,qty:1},jobs:Object.fromEntries(Object.entries(JOBS).map(([id,j])=>[id,{qty:j.qty,variant:Object.keys(j.variants)[0],cx:'standard',board:'bstd'}]))};}
+export function initialState(){return {type:'residential',place:null,selected:[],skip:{on:true,qty:1},jobs:Object.fromEntries(Object.entries(JOBS).map(([id,j])=>[id,{qty:j.qty,variant:Object.keys(j.variants)[0],cx:'standard',board:'bstd'}]))};}
 const numeric=v=>v!==''&&v!==null&&typeof v!=='boolean'&&Number.isFinite(Number(v));
 const band=central=>central===0?{low:0,high:0,central:0}:{central,low:Math.floor(central*(1-SPREAD)/5)*5,high:Math.ceil(central*(1+SPREAD)/5)*5};
 export function calculate(state){
   const errors=[],rows=[];
   if(!state||typeof state!=='object')return {errors:['Invalid plan.'],rows,skip:null,oneOff:band(0),monthly:band(0)};
   if(!['residential','commercial'].includes(state.type))errors.push('Choose a property type.');
-  if(!LOCATIONS.includes(state.location))errors.push('Choose a location.');
   const ids=Array.isArray(state.selected)?state.selected:[];
   if(new Set(ids).size!==ids.length||ids.some(id=>!JOBS[id]))errors.push('Invalid job selection.');
   const factor=state.type==='commercial'?1+COMMERCIAL_UPLIFT:1;
@@ -64,9 +63,13 @@ export function calculate(state){
     if(!numeric(n)||!Number.isInteger(n)||n<1||n>MAX_SKIPS)errors.push(`Skips must be a whole number between 1 and ${MAX_SKIPS}.`);
     else skip={qty:n,...band((n*SKIP.each+Math.max(SKIP.prepMin,jobsCentral*SKIP.prep))*factor)};
   }
-  const parts=[...rows,...(skip?[skip]:[])],central=parts.reduce((s,r)=>s+r.central,0);
+  // The total needs the job location so travel beyond 20 km of Nicosia is included.
+  let travel=null;const where=resolvePlace(state.place);
+  if(state.place&&!where)errors.push('Choose the job location.');
+  if(where){const km=distanceKm(where.lat,where.lon);if(km>TRAVEL.maxKm)errors.push('This location is outside our service area.');else travel={km:Math.round(km),amount:travelCharge(km),low:travelCharge(km),high:travelCharge(km),central:travelCharge(km)};}
+  const parts=[...rows,...(skip?[skip]:[]),...(travel?[travel]:[])],central=parts.reduce((s,r)=>s+r.central,0);
   const oneOff={low:parts.reduce((s,r)=>s+r.low,0),high:parts.reduce((s,r)=>s+r.high,0),central,net:central/(1+VAT_RATE/100),tax:central-central/(1+VAT_RATE/100)};
-  return {errors,rows,skip,oneOff,monthly:band(0)};
+  return {errors,rows,skip,travel,needsPlace:rows.length>0&&!travel,oneOff,monthly:band(0)};
 }
 const clean=s=>s.replace(/[\u200e\u200f\u061c]/g,'');
 export const money=value=>clean(new Intl.NumberFormat(getLocale(),{style:'currency',currency:'EUR',currencyDisplay:'narrowSymbol',maximumFractionDigits:0}).format(value));
@@ -146,3 +149,42 @@ he:{howTitle:'איך מתכנן התקציב עובד',how1:'בחרו את סו�
 ro:{howTitle:'Cum funcționează planificatorul de buget',how1:'Alege tipul proprietății și localitatea.',how2:'Bifează fiecare lucrare de care ai nevoie și alege tipul, suprafața și complexitatea.',how3:'Vezi imediat intervalul de buget, cu materiale, montaj și TVA 19% incluse. Salvează-l ca PDF sau trimite-l nouă pentru a programa o inspecție.'}};
 for(const l in HOW)Object.assign(COPY[l],HOW[l]);
 export const copyText=(lang,key)=>COPY[lang]?.[key]??COPY.en[key]??key;
+
+// ── Job location and travel ────────────────────────────────────────────────
+// Prices are for Nicosia. Up to 20 km by road from Nicosia centre there is no
+// travel charge; beyond that €10 is added for each further 10 km (or part).
+// Road distance is estimated as straight-line distance × 1.3. Coordinates are
+// approximate town/village centres; no address leaves the visitor's browser.
+export const BASE={lat:35.1725,lon:33.365};
+export const TRAVEL={freeKm:20,stepKm:10,stepEur:10,roadFactor:1.3,maxKm:260};
+export const PLACES=[
+['nicosia','Nicosia','Λευκωσία',35.1725,33.365],['strovolos','Strovolos','Στρόβολος',35.143,33.336],['lakatamia','Lakatamia','Λακατάμια',35.117,33.317],['latsia','Latsia','Λατσιά',35.096,33.37],['aglantzia','Aglantzia','Αγλαντζιά',35.156,33.399],['engomi','Engomi','Έγκωμη',35.163,33.329],['geri','Geri','Γέρι',35.105,33.42],['tseri','Tseri','Τσέρι',35.073,33.323],['dali','Dali','Δάλι',35.022,33.42],['perachorio','Pera Chorio','Πέρα Χωριό',35.015,33.388],['kokkinotrimithia','Kokkinotrimithia','Κοκκινοτριμιθιά',35.152,33.205],['deftera','Deftera','Δευτερά',35.086,33.273],['psimolofou','Psimolofou','Ψιμολόφου',35.064,33.26],['akaki','Akaki','Ακάκι',35.133,33.125],['peristerona','Peristerona','Περιστερώνα',35.132,33.077],['astromeritis','Astromeritis','Αστρομερίτης',35.143,33.038],['klirou','Klirou','Κλήρου',35.023,33.177],['lythrodontas','Lythrodontas','Λυθροδόντας',34.95,33.297],['evrychou','Evrychou','Ευρύχου',35.045,32.91],['kakopetria','Kakopetria','Κακοπετριά',34.988,32.901],
+['larnaca','Larnaca','Λάρνακα',34.917,33.629],['aradippou','Aradippou','Αραδίππου',34.953,33.59],['livadia','Livadia','Λιβάδια',34.948,33.628],['dromolaxia','Dromolaxia','Δρομολαξιά',34.88,33.585],['oroklini','Oroklini','Ορόκλινη',34.981,33.656],['pyla','Pyla','Πύλα',35.011,33.689],['xylofagou','Xylofagou','Ξυλοφάγου',34.985,33.853],['kiti','Kiti','Κίτι',34.848,33.573],['pervolia','Pervolia','Περβόλια',34.829,33.587],['athienou','Athienou','Αθηένου',35.062,33.542],['kornos','Kornos','Κόρνος',34.923,33.399],['lefkara','Lefkara','Λεύκαρα',34.867,33.307],['kalavasos','Kalavasos','Καλαβασός',34.766,33.298],['zygi','Zygi','Ζύγι',34.73,33.337],
+['ayianapa','Ayia Napa','Αγία Νάπα',34.988,34.0],['protaras','Protaras','Πρωταράς',35.012,34.058],['paralimni','Paralimni','Παραλίμνι',35.038,33.982],['deryneia','Deryneia','Δερύνεια',35.063,33.958],['sotira','Sotira','Σωτήρα',35.03,33.948],['frenaros','Frenaros','Φρέναρος',35.039,33.918],['liopetri','Liopetri','Λιοπέτρι',35.004,33.895],['avgorou','Avgorou','Αυγόρου',35.037,33.845],['xylotymvou','Xylotymvou','Ξυλοτύμβου',35.025,33.74],['ormideia','Ormideia','Ορμήδεια',34.99,33.78],
+['limassol','Limassol','Λεμεσός',34.684,33.044],['germasogeia','Germasogeia','Γερμασόγεια',34.705,33.088],['agiosathanasios','Agios Athanasios','Άγιος Αθανάσιος',34.708,33.05],['mesageitonia','Mesa Geitonia','Μέσα Γειτονιά',34.697,33.045],['katopolemidia','Kato Polemidia','Κάτω Πολεμίδια',34.695,33.008],['ypsonas','Ypsonas','Ύψωνας',34.687,32.958],['kolossi','Kolossi','Κολόσσι',34.668,32.933],['erimi','Erimi','Ερήμη',34.672,32.923],['episkopi','Episkopi','Επισκοπή',34.668,32.895],['palodeia','Palodeia','Παλώδια',34.73,33.005],['parekklisia','Parekklisia','Παρεκκλησιά',34.735,33.158],['pyrgos','Pyrgos','Πύργος',34.73,33.183],['pissouri','Pissouri','Πισσούρι',34.669,32.705],['platres','Platres','Πλάτρες',34.889,32.864],['agros','Agros','Αγρός',34.915,33.016],
+['paphos','Paphos','Πάφος',34.772,32.429],['geroskipou','Geroskipou','Γεροσκήπου',34.76,32.45],['konia','Konia','Κονιά',34.782,32.47],['mesogi','Mesogi','Μεσόγη',34.803,32.456],['emba','Emba','Έμπα',34.806,32.433],['chlorakas','Chlorakas','Χλώρακας',34.803,32.411],['kissonerga','Kissonerga','Κισσόνεργα',34.818,32.4],['tala','Tala','Τάλα',34.841,32.426],['peyia','Peyia','Πέγεια',34.882,32.383],['coralbay','Coral Bay','Κοράλ Μπέι',34.853,32.37],['kouklia','Kouklia','Κούκλια',34.706,32.573],['polis','Polis Chrysochous','Πόλις Χρυσοχούς',35.036,32.425],['latchi','Latchi','Λατσί',35.039,32.394]
+].map(([id,en,el,lat,lon])=>({id,en,el,lat,lon}));
+export const PLACE_BY_ID=Object.fromEntries(PLACES.map(p=>[p.id,p]));
+// Older links from the sister websites name a district; map it to its main town.
+export const DISTRICT_PLACE={'Nicosia':'nicosia','Limassol':'limassol','Larnaca':'larnaca','Paphos':'paphos','Famagusta district':'paralimni'};
+const fold=s=>String(s).toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,'').replace(/[^\p{L}\p{N}]+/gu,' ').trim();
+export function findPlace(text){const q=fold(text);if(!q)return null;return PLACES.find(p=>fold(p.en)===q||fold(p.el)===q)||null;}
+export const placeName=(place,lang)=>!place?'':place.id?(lang==='el'?PLACE_BY_ID[place.id].el:PLACE_BY_ID[place.id].en):'';
+export function distanceKm(lat,lon){const r=Math.PI/180,dLat=(lat-BASE.lat)*r,dLon=(lon-BASE.lon)*r,a=Math.sin(dLat/2)**2+Math.cos(BASE.lat*r)*Math.cos(lat*r)*Math.sin(dLon/2)**2;return 2*6371*Math.asin(Math.sqrt(a))*TRAVEL.roadFactor;}
+export function travelCharge(km){return km<=TRAVEL.freeKm?0:Math.ceil((km-TRAVEL.freeKm)/TRAVEL.stepKm)*TRAVEL.stepEur;}
+// A job location is a listed place ({id}) or the visitor's own position ({lat,lon}).
+export function resolvePlace(place){
+  if(!place||typeof place!=='object')return null;
+  if(typeof place.id==='string'){const p=PLACE_BY_ID[place.id];return p?{id:p.id,lat:p.lat,lon:p.lon}:null;}
+  const lat=Number(place.lat),lon=Number(place.lon);
+  if(!Number.isFinite(lat)||!Number.isFinite(lon))return null;
+  return {lat,lon};
+}
+const WHERE={
+en:{where:'Where is the job?',placeLabel:'Town or village',placeHint:'Start typing, e.g. Limassol',myLoc:'Use my location',locating:'Finding your location…',locFail:'We could not get your location. Please type the town or village.',outside:'This location is outside our service area in Cyprus.',notListed:'Choose a town or village from the list, or use your location.',needPlace:'Add the job location to see your total budget.',travel:'Travel',travelFree:'Included (within 20 km of Nicosia)',kmFrom:'≈{km} km from Nicosia',myPlace:'My location',locNote:'Prices are for Nicosia. Beyond 20 km a small travel charge is added.'},
+el:{where:'Πού είναι η εργασία;',placeLabel:'Πόλη ή χωριό',placeHint:'Πληκτρολογήστε, π.χ. Λεμεσός',myLoc:'Χρήση της τοποθεσίας μου',locating:'Εντοπισμός τοποθεσίας…',locFail:'Δεν βρέθηκε η τοποθεσία σας. Πληκτρολογήστε την πόλη ή το χωριό.',outside:'Η τοποθεσία είναι εκτός της περιοχής εξυπηρέτησής μας στην Κύπρο.',notListed:'Επιλέξτε πόλη ή χωριό από τη λίστα ή χρησιμοποιήστε την τοποθεσία σας.',needPlace:'Προσθέστε την τοποθεσία της εργασίας για να δείτε τον συνολικό προϋπολογισμό.',travel:'Μετακίνηση',travelFree:'Περιλαμβάνεται (έως 20 χλμ. από τη Λευκωσία)',kmFrom:'≈{km} χλμ. από τη Λευκωσία',myPlace:'Η τοποθεσία μου',locNote:'Οι τιμές ισχύουν για τη Λευκωσία. Πέραν των 20 χλμ. προστίθεται μικρή χρέωση μετακίνησης.'},
+ru:{where:'Где находится объект?',placeLabel:'Город или деревня',placeHint:'Начните вводить, например Limassol',myLoc:'Моё местоположение',locating:'Определяем местоположение…',locFail:'Не удалось определить местоположение. Введите город или деревню.',outside:'Это место вне нашей зоны обслуживания на Кипре.',notListed:'Выберите город или деревню из списка или используйте своё местоположение.',needPlace:'Укажите место работ, чтобы увидеть общий бюджет.',travel:'Выезд',travelFree:'Включено (до 20 км от Никосии)',kmFrom:'≈{km} км от Никосии',myPlace:'Моё местоположение',locNote:'Цены указаны для Никосии. Дальше 20 км добавляется небольшая плата за выезд.'},
+uk:{where:'Де знаходиться об’єкт?',placeLabel:'Місто або село',placeHint:'Почніть вводити, наприклад Limassol',myLoc:'Моє місцезнаходження',locating:'Визначаємо місцезнаходження…',locFail:'Не вдалося визначити місцезнаходження. Введіть місто або село.',outside:'Це місце поза нашою зоною обслуговування на Кіпрі.',notListed:'Оберіть місто або село зі списку чи скористайтеся своїм місцезнаходженням.',needPlace:'Вкажіть місце робіт, щоб побачити загальний бюджет.',travel:'Виїзд',travelFree:'Включено (до 20 км від Нікосії)',kmFrom:'≈{km} км від Нікосії',myPlace:'Моє місцезнаходження',locNote:'Ціни вказано для Нікосії. Далі 20 км додається невелика плата за виїзд.'},
+he:{where:'איפה העבודה?',placeLabel:'עיר או כפר',placeHint:'התחילו להקליד, למשל Limassol',myLoc:'שימוש במיקום שלי',locating:'מאתרים את המיקום…',locFail:'לא הצלחנו לאתר את המיקום. הקלידו את שם העיר או הכפר.',outside:'המיקום מחוץ לאזור השירות שלנו בקפריסין.',notListed:'בחרו עיר או כפר מהרשימה, או השתמשו במיקום שלכם.',needPlace:'הוסיפו את מיקום העבודה כדי לראות את התקציב הכולל.',travel:'נסיעה',travelFree:'כלול (עד 20 ק״מ מניקוסיה)',kmFrom:'≈{km} ק״מ מניקוסיה',myPlace:'המיקום שלי',locNote:'המחירים הם לניקוסיה. מעבר ל-20 ק״מ נוסף תשלום נסיעה קטן.'},
+ro:{where:'Unde este lucrarea?',placeLabel:'Oraș sau sat',placeHint:'Începe să scrii, de ex. Limassol',myLoc:'Folosește locația mea',locating:'Se caută locația…',locFail:'Nu am putut afla locația. Scrie orașul sau satul.',outside:'Locația este în afara zonei noastre de servicii din Cipru.',notListed:'Alege un oraș sau sat din listă ori folosește locația ta.',needPlace:'Adaugă locația lucrării pentru a vedea bugetul total.',travel:'Deplasare',travelFree:'Inclusă (până la 20 km de Nicosia)',kmFrom:'≈{km} km de Nicosia',myPlace:'Locația mea',locNote:'Prețurile sunt pentru Nicosia. Peste 20 km se adaugă o mică taxă de deplasare.'}};
+for(const l in WHERE)Object.assign(COPY[l],WHERE[l]);

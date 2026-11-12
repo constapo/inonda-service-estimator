@@ -9,7 +9,7 @@ test('job referrals preselect planner jobs without changing prices',()=>{
   const arrival=incomingJourney(before,'?lang=he&services=aluminium,hpl&location=Limassol');
   assert.equal(arrival.imported,true);
   assert.deepEqual(arrival.state.selected,['aluminium','hpl']);
-  assert.equal(arrival.state.location,'Limassol');
+  assert.deepEqual(arrival.state.place,{id:'limassol'});
   assert.deepEqual(before,snapshot);
   assert.deepEqual(calculate(arrival.state).errors,[]);
 });
@@ -19,11 +19,16 @@ test('contract services from sister sites are dropped, planner jobs are kept',()
   const contractOnly=incomingJourney(initialState(),'?services=management');
   assert.equal(contractOnly.servicesImported,false);
 });
+test('district and place referrals become a job location',()=>{
+  assert.deepEqual(incomingJourney(initialState(),'?location=Famagusta%20district').state.place,{id:'paralimni'});
+  assert.deepEqual(incomingJourney(initialState(),'?location=dali').state.place,{id:'dali'});
+  assert.equal(incomingJourney(initialState(),'?location=Other%20location%20in%20Cyprus').imported,false);
+});
 test('area-only referrals keep an empty plan',()=>{
   const arrival=incomingJourney(initialState(),'?lang=el&location=Limassol');
   assert.equal(arrival.imported,true);
   assert.equal(arrival.servicesImported,false);
-  assert.equal(arrival.state.location,'Limassol');
+  assert.deepEqual(arrival.state.place,{id:'limassol'});
   assert.deepEqual(arrival.state.selected,[]);
 });
 test('unknown, malformed and inherited service names cannot create planner entries',()=>{
