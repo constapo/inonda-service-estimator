@@ -68,9 +68,14 @@ test('travel: free up to 20 km from Nicosia, then €10 for each further 10 km',
   for(const id of ['nicosia','strovolos','lakatamia','latsia','aglantzia','engomi'])assert.equal(calculate(plan(['flooring'],s=>{s.place={id};})).travel.amount,0,id);
   const lim=calculate(plan(['flooring'],s=>{s.skip.on=false;s.place={id:'limassol'};}));
   assert.ok(lim.travel.km>=70&&lim.travel.km<=95,String(lim.travel.km));
-  close(lim.oneOff.central,lim.rows[0].central+lim.travel.amount);
-  assert.equal(lim.oneOff.low,lim.rows[0].low+lim.travel.amount);
+  // Travel is folded into a visible line so the lines always add up to the total.
+  const base=calculate(plan(['flooring'],s=>{s.skip.on=false;s.place={id:'nicosia'};}));
+  close(lim.oneOff.central,base.oneOff.central+lim.travel.amount);
+  close(lim.oneOff.central,lim.rows[0].central);
+  const withSkip=calculate(plan(['flooring'],s=>{s.place={id:'limassol'};}));
+  close(withSkip.oneOff.central,withSkip.rows[0].central+withSkip.skip.central);
 });
+test('travel is never shown to visitors in any language',()=>{for(const lang of ['el','en','ru','uk','he','ro']){for(const key of ['travel','travelFree','kmFrom'])assert.equal(COPY[lang][key],undefined,lang+':'+key);assert.doesNotMatch(COPY[lang].locNote,/20|km|χλμ|км|ק״מ/);}});
 test('travel is not raised by the commercial factor or the complexity',()=>{
   const a=calculate(plan(['flooring'],s=>{s.place={id:'paphos'};})).travel.amount;
   const b=calculate(plan(['flooring'],s=>{s.place={id:'paphos'};s.type='commercial';s.jobs.flooring.cx='complex';})).travel.amount;
@@ -87,7 +92,7 @@ test('places are found by English or Greek name, with or without accents',()=>{
   assert.equal(new Set(PLACES.map(p=>p.id)).size,PLACES.length);
   for(const p of PLACES)assert.ok(distanceKm(p.lat,p.lon)<260,p.id);
 });
-test('location texts exist in all six languages',()=>{for(const lang of ['el','en','ru','uk','he','ro'])for(const key of ['where','placeLabel','placeHint','myLoc','locFail','outside','notListed','needPlace','travel','travelFree','kmFrom','myPlace','locNote'])assert.ok(COPY[lang][key],lang+':'+key);});
+test('location texts exist in all six languages',()=>{for(const lang of ['el','en','ru','uk','he','ro'])for(const key of ['where','placeLabel','placeHint','myLoc','locFail','outside','notListed','needPlace','myPlace','locNote'])assert.ok(COPY[lang][key],lang+':'+key);});
 test('welding: each type has its own unit, default quantity and minimum, and travel applies as usual',()=>{
   const s=initialState();s.selected=['welding'];s.skip.on=false;s.place={id:'larnaca'};
   const units={railing:'lm',railinggalv:'lm',steelfence:'lm',gateswing:'piece',gatesliding:'piece',grille:'piece',canopy:'m2'};

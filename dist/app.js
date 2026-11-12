@@ -39,7 +39,7 @@ function renderStatic(){
   update();
 }
 function placeLabel(){return state.place?.id?placeName(state.place,getLanguage()):state.place?c('myPlace'):'';}
-function whereNote(r){const n=$('#bp-where-note');n.classList.remove('bp-warn');if(r.travel){n.textContent=c('kmFrom').replace('{km}',r.travel.km)+' · '+(r.travel.amount?c('travel')+' '+money(r.travel.amount):c('travelFree'));return;}if(r.errors.includes('This location is outside our service area.')){n.textContent=c('outside');n.classList.add('bp-warn');return;}n.textContent=c('locNote');}
+function whereNote(r){const n=$('#bp-where-note');n.classList.remove('bp-warn');if(r.errors.includes('This location is outside our service area.')){n.textContent=c('outside');n.classList.add('bp-warn');return;}n.textContent=c('locNote');}
 function lineMarkup(name,sub,price){return `<li><span>${escape(name)}<small>${escape(sub)}</small></span><span>${price}</span></li>`;}
 function update(){
   const r=calculate(state),valid=!r.errors.length,has=r.rows.length>0;
@@ -50,7 +50,7 @@ function update(){
   $('.bp-total').classList.toggle('bp-waiting',has&&r.needsPlace);$('.bp-total small').textContent=has&&r.needsPlace?c('needPlace'):c('total');
   $('.bp-where').classList.toggle('bp-attention',has&&r.needsPlace);whereNote(r);
   if(!valid){$('#bp-lines').innerHTML=`<li class="bp-error" role="alert">${escape(r.errors[0])}</li>`;}
-  else $('#bp-lines').innerHTML=has?r.rows.map(row=>lineMarkup(c(row.id),`${c(row.variant)}${row.board&&row.board!=='bstd'?' · '+c(row.board):''} · ${row.qty} ${unit(row.id)}`,range(row))).join('')+(r.skip?lineMarkup(c('skip'),`${r.skip.qty} ${c('u_skip')}`,range(r.skip)):'')+(r.travel?lineMarkup(c('travel'),`${placeLabel()} · ${c('kmFrom').replace('{km}',r.travel.km)}`,r.travel.amount?money(r.travel.amount):c('travelFree')):''):`<li class="bp-empty">${escape(c('empty'))}</li>`;
+  else $('#bp-lines').innerHTML=has?r.rows.map(row=>lineMarkup(c(row.id),`${c(row.variant)}${row.board&&row.board!=='bstd'?' · '+c(row.board):''} · ${row.qty} ${unit(row.id)}`,range(row))).join('')+(r.skip?lineMarkup(c('skip'),`${r.skip.qty} ${c('u_skip')}`,range(r.skip)):''):`<li class="bp-empty">${escape(c('empty'))}</li>`;
   $('#print').disabled=!ready;$('#bp-clear').disabled=!has;$('#bp-book').classList.toggle('bp-disabled',!ready);
   $('#bp-book').href='https://wa.me/35794091616?text='+encodeURIComponent(planText(r));
   persist();
@@ -60,7 +60,7 @@ function planText(r=calculate(state)){
   const lines=[c('msg')];
   for(const row of r.rows)lines.push(`• ${c(row.id)} – ${c(row.variant)}${row.board&&row.board!=='bstd'?', '+c(row.board):''}, ${row.qty} ${unit(row.id)}${state.jobs[row.id].cx!=='standard'?', '+c(state.jobs[row.id].cx):''}`);
   if(r.skip)lines.push(`• ${c('skip')} – ${r.skip.qty} ${c('u_skip')}`);
-  lines.push(`${c('ptype')}: ${c(state.type)}`,`${c('placeLabel')}: ${placeLabel()||'—'}${r.travel?' ('+c('kmFrom').replace('{km}',r.travel.km)+')':''}${state.place&&!state.place.id?' https://maps.google.com/?q='+state.place.lat+','+state.place.lon:''}`);
+  lines.push(`${c('ptype')}: ${c(state.type)}`,`${c('placeLabel')}: ${placeLabel()||'—'}${state.place&&!state.place.id?' https://maps.google.com/?q='+state.place.lat+','+state.place.lon:''}`);
   if(r.rows.length&&!r.errors.length&&!r.needsPlace)lines.push(`${c('total')}: ${range(r.oneOff).replace(/[\u2066\u2069]/g,'')} (${c('incl')})`);
   return lines.join('\n');
 }
