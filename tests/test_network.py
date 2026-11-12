@@ -80,9 +80,15 @@ class NetworkTests(unittest.TestCase):
                             self.assertEqual(parse_qs(u.query).get('lang'), [lang]) if target == 'homes' else self.assertTrue(u.path.startswith('/' + lang + '/'))
 
     def test_specialist_work_is_not_misrepresented_as_a_handyman_quote(self):
-        for page in ['electrical-services','plumbing-services','emergency-repairs']:
+        # Specialist trades go to their own priced planner jobs, never to a general handyman allowance;
+        # contract-only work (maintenance plans, contract and emergency repairs) preselects nothing.
+        self.assertEqual(network.journey('electrical-services')[0], 'electrical')
+        self.assertEqual(network.journey('plumbing-services')[0], 'plumbing')
+        for page in ['emergency-repairs','contract-repairs','maintenance-plans','air-conditioning-services']:
             self.assertEqual(network.journey(page)[0], '')
         self.assertEqual(network.journey('home-renovation')[0], 'renovation')
+        self.assertEqual(network.journey('kitchen-renovation')[0], 'kitchen')
+        self.assertEqual(network.journey('painting-plastering-gypsum')[0], 'painting,gypsum')
         self.assertEqual(network.journey('property-management-services')[0], 'management')
 
     def test_template_enhancement_is_idempotent_and_keeps_original_content(self):
@@ -90,7 +96,8 @@ class NetworkTests(unittest.TestCase):
         first = network.enhance_html(source, 'org', 'he/contract-repairs/index.html')
         self.assertEqual(first, network.enhance_html(first, 'org', 'he/contract-repairs/index.html'))
         self.assertIn('<h1>Original</h1>', first)
-        self.assertIn('services=handyman', first)
+        self.assertNotIn('services=handyman', first)
+        self.assertIn('https://www.inonda.homes/?lang=he#property', first)
         self.assertEqual(first.count('id="inonda-network"'), 1)
 
     def test_incoming_service_and_area_are_bounded_public_parameters(self):

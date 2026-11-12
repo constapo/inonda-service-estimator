@@ -123,3 +123,5 @@ input[aria-invalid=true]{border-color:#ab352d}
 .bp-total.bp-waiting strong{font-size:22px;opacity:.6}
 .bp-btn.bp-disabled{opacity:.5}
 @media (max-width:420px){.bp-where-row{flex-direction:column}.bp-locate{width:100%}}
+.bp-tile-art{display:grid;place-items:center;aspect-ratio:3/2;background:radial-gradient(circle at 70% 20%,#0077B6,#023E8A 75%);color:#fff}
+.bp-tile-art .icon{width:56px;height:56px;stroke:currentColor;fill:none;stroke-width:1.6}

@@ -35,7 +35,7 @@ function renderStatic(){
   $('#bp-places').innerHTML=PLACES.map(p=>`<option value="${escape(lang==='el'?p.el:p.en)}">${escape(other==='el'?p.el:p.en)}</option>`).join('');
   const input=$('#bp-place');input.placeholder=c('placeHint');if(document.activeElement!==input)input.value=placeLabel();
   $('#bp-jobs').innerHTML=Object.keys(JOBS).map(jobMarkup).join('')+skipMarkup();
-  $('#bp-grid').innerHTML=Object.keys(JOBS).map(id=>`<article class="bp-tile"><img src="https://www.inonda.org/assets/img/${JOB_IMAGES[id]}-sm.webp" alt="" loading="lazy" decoding="async" width="480" height="320"><div><h3>${escape(c(id))}</h3><p>${escape(DESC[lang]?.[id]||DESC.en[id])}</p><a href="https://www.inonda.org/${lang}/${JOB_PAGES[id]}" target="_blank" rel="noopener">${escape(c('more'))} <span aria-hidden="true">↗</span></a></div></article>`).join('');
+  $('#bp-grid').innerHTML=Object.keys(JOBS).map(id=>`<article class="bp-tile">${JOB_IMAGES[id]?`<img src="https://www.inonda.org/assets/img/${JOB_IMAGES[id]}-sm.webp" alt="" loading="lazy" decoding="async" width="480" height="320">`:`<span class="bp-tile-art">${icon('tools')}</span>`}<div><h3>${escape(c(id))}</h3><p>${escape(DESC[lang]?.[id]||DESC.en[id])}</p><a href="https://www.inonda.org/${lang}/${JOB_PAGES[id]}" target="_blank" rel="noopener">${escape(c('more'))} <span aria-hidden="true">↗</span></a></div></article>`).join('');
   update();
 }
 function placeLabel(){return state.place?.id?placeName(state.place,getLanguage()):state.place?c('myPlace'):'';}
