@@ -1,26 +1,58 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {initialState,calculate,migrateState} from '../dist/estimator.mjs';
-const legacyExample=()=>{const s=initialState();s.selected=['cleaning','handyman'];return s;};
-test('deep-clean and handyman example totals €433.95 including 19% VAT',()=>{const r=calculate(legacyExample());assert.deepEqual(r.errors,[]);assert.ok(Math.abs(r.oneOff.central-433.95)<1e-9);assert.equal(r.oneOff.low,345);assert.equal(r.oneOff.high,525);assert.ok(Math.abs(r.oneOff.net+r.oneOff.tax-r.oneOff.central)<1e-9);assert.equal(r.monthly.central,0);});
-test('recurring work is kept out of one-off totals',()=>{const s=legacyExample();s.selected.push('management');s.services.cleaning.frequency=2;const r=calculate(s);assert.ok(Math.abs(r.oneOff.base-124.95)<1e-9);assert.ok(Math.abs(r.monthly.base-695.35)<1e-9);assert.equal(r.monthly.visits,2);});
-test('weekly service uses 52 / 12 visits; management is not condition adjusted',()=>{const s=initialState();s.selected=['cleaning','management'];s.condition=1.35;s.services.cleaning.frequency=52/12;s.travel=10;const r=calculate(s);assert.ok(Math.abs(r.monthly.base-((309*1.35+10)*52/12+77.35))<1e-9);assert.equal(r.rows[1].base,77.35);});
-test('minimum charge applies before condition allowance',()=>{const s=initialState();s.selected=['cleaning'];s.services.cleaning.quantity=10;s.condition=1.15;const r=calculate(s);assert.ok(Math.abs(r.oneOff.base-191.59)<1e-9);assert.equal(r.rows[0].minimumApplied,true);});
-test('reserve preserves VAT-inclusive pricing and does not add VAT twice',()=>{const s=legacyExample();s.reserve=10;const r=calculate(s);assert.ok(Math.abs(r.oneOff.central-477.345)<1e-8);assert.equal(r.oneOff.low,380);assert.equal(r.oneOff.high,575);});
-test('travel counts maintenance inspection visits and other visits separately',()=>{const s=initialState();s.selected=['maintenance','handyman'];s.services.maintenance.quantity=3;s.travel=20;const r=calculate(s);assert.ok(Math.abs(r.oneOff.base-508.4)<1e-9);assert.equal(r.oneOff.visits,4);});
-test('renovation and garden areas are independent of indoor size',()=>{const s=initialState();s.selected=['renovation','landscaping'];s.services.landscaping.quantity=2000;s.services.renovation.quantity=101;assert.match(calculate(s).errors.join(' '),/Renovation/);s.services.renovation.quantity=50;assert.deepEqual(calculate(s).errors,[]);});
-test('invalid blanks, negative and nonfinite quantities block estimation',()=>{for(const bad of ['',-1,Infinity,'NaN']){const s=legacyExample();s.services.handyman.quantity=bad;assert.ok(calculate(s).errors.length);}});
-test('unit and inspection quantities must be whole numbers',()=>{const s=initialState();s.selected=['management'];s.services.management.quantity=1.5;assert.ok(calculate(s).errors.length);});
-test('location does not change prices and commercial uplift is exactly 20%',()=>{const s=initialState();const first=calculate(s).oneOff.central;s.location='Limassol';assert.equal(calculate(s).oneOff.central,first);s.type='commercial';assert.ok(Math.abs(calculate(s).oneOff.central-first*1.2)<1e-9);s.type='residential';assert.equal(calculate(s).oneOff.central,first);});
-test('zero-rate custom scenario remains zero and empty selection produces no phantom fee',()=>{const s=initialState();s.selected=['handyman'];s.services.handyman.rate=0;s.services.handyman.minimum=0;assert.equal(calculate(s).oneOff.high,0);s.selected=[];s.travel=30;assert.equal(calculate(s).oneOff.central,0);});
-test('invalid saved structures are rejected',()=>{const s=initialState();s.selected=['cleaning','cleaning'];assert.ok(calculate(s).errors.length);assert.ok(calculate(null).errors.length);s.selected=['unknown'];assert.ok(calculate(s).errors.length);});
+import {initialState,calculate,JOBS,COPY,DESC,range} from '../dist/estimator.mjs';
+const plan=(ids,edit=()=>{})=>{const s=initialState();s.selected=ids;edit(s);return s;};
+const close=(a,b)=>assert.ok(Math.abs(a-b)<1e-9,`${a} ≠ ${b}`);
 
-test('visitor-entered gross rates include VAT exactly once, including reserve and travel',()=>{const s=initialState();s.selected=['handyman'];s.services.handyman={quantity:2,rate:119,minimum:0,frequency:0};s.travel=119;s.reserve=10;const r=calculate(s);assert.ok(Math.abs(r.oneOff.central-392.7)<1e-9);assert.ok(Math.abs(r.oneOff.net-330)<1e-9);assert.ok(Math.abs(r.oneOff.tax-62.7)<1e-9);});
-test('19% VAT is included in both monthly and one-off budgets',()=>{const s=initialState();s.selected.push('management');const r=calculate(s);for(const total of [r.oneOff,r.monthly]){assert.ok(Math.abs(total.tax-total.central*19/119)<1e-9);assert.ok(Math.abs(total.net+total.tax-total.central)<1e-9);}assert.equal(r.monthly.central,77.35);});
-test('old saved VAT-exclusive rates migrate once without losing scope or notes',()=>{const previous=initialState();delete previous.pricingVersion;previous.tax=0;previous.services.handyman.rate=35;previous.services.handyman.minimum=70;previous.travel=10;previous.notes='Keep access notes';const next=migrateState(previous);assert.equal(next.services.handyman.rate,41.65);assert.equal(next.services.handyman.minimum,83.3);assert.equal(next.travel,11.9);assert.equal(next.notes,previous.notes);assert.deepEqual(next.selected,previous.selected);assert.deepEqual(migrateState(next),next);assert.equal(previous.services.handyman.rate,35);assert.deepEqual(calculate(next).errors,[]);});
-
-test('commercial pricing adds 20% to each of all six services and extracts VAT once',()=>{const s=initialState();s.selected=Object.keys(s.services);s.travel=15;s.condition=1.15;s.reserve=10;const residential=calculate(s);s.type='commercial';const commercial=calculate(s);assert.deepEqual(commercial.errors,[]);for(const row of commercial.rows){const original=residential.rows.find(x=>x.id===row.id);assert.ok(Math.abs(row.base-original.base*1.2)<1e-8);assert.equal(row.commercialFactor,1.2);}for(const bucket of ['oneOff','monthly']){assert.ok(Math.abs(commercial[bucket].central-residential[bucket].central*1.2)<1e-8);assert.ok(Math.abs(commercial[bucket].tax-commercial[bucket].central*19/119)<1e-8);}});
-test('commercial minimum charge and custom gross price receive the uplift',()=>{const s=initialState();s.type='commercial';s.selected=['handyman'];s.services.handyman={quantity:1,rate:50,minimum:119,frequency:0};const r=calculate(s);assert.equal(r.rows[0].minimumApplied,true);assert.ok(Math.abs(r.oneOff.central-142.8)<1e-9);assert.ok(Math.abs(r.oneOff.net-120)<1e-9);assert.ok(Math.abs(r.oneOff.tax-22.8)<1e-9);});
-test('aluminium, HPL and decorative panels are one all-in rate per m² including materials, labour and VAT',()=>{const s=initialState();s.selected=['aluminium','hpl','decor'];s.services.hpl.quantity=30;const r=calculate(s);assert.deepEqual(r.errors,[]);assert.ok(Math.abs(r.oneOff.central-(8*345.1+30*130.9+15*83.3))<1e-9);assert.ok(Math.abs(r.oneOff.net*1.19-r.oneOff.central)<1e-9);for(const row of r.rows)assert.match(row.scope,/materials, installation and VAT included in one price/);});
-test('aluminium, HPL and decorative panels are one-off only and keep a valid scope',()=>{for(const id of ['aluminium','hpl','decor']){const s=initialState();s.selected=[id];s.services[id].frequency=1;assert.match(calculate(s).errors.join(' '),/frequency/);s.services[id].frequency=0;s.services[id].variant='bogus';assert.match(calculate(s).errors.join(' '),/scope/);}});
-test('saved scenarios from before the new services gain their defaults',()=>{const old=initialState();delete old.services.aluminium;delete old.services.hpl;delete old.services.decor;const s=migrateState(old);s.selected=['aluminium'];assert.deepEqual(calculate(s).errors,[]);});
+test('only one-off jobs are offered; contract work is excluded',()=>{
+  for(const id of ['maintenance','management','cleaning','landscaping','handyman'])assert.equal(Object.hasOwn(JOBS,id),false,id);
+  for(const id of ['flooring','kitchen','bathroom','painting','gypsum','plumbing','electrical','roofing','doors','outdoor','aluminium','hpl','decor','renovation'])assert.ok(JOBS[id],id);
+  const r=calculate(plan(['cleaning']));assert.notDeepEqual(r.errors,[]);
+});
+test('empty plan has no total and no skip',()=>{const r=calculate(initialState());assert.deepEqual(r.errors,[]);assert.equal(r.rows.length,0);assert.equal(r.skip,null);assert.equal(r.oneOff.central,0);});
+test('per-unit price, minimum job price and ±15% range rounded to €5',()=>{
+  const r=calculate(plan(['gypsum'],s=>{s.skip.on=false;s.jobs.gypsum.variant='ceiling';s.jobs.gypsum.qty=25;}));
+  close(r.rows[0].central,950);assert.equal(r.rows[0].low,805);assert.equal(r.rows[0].high,1095);
+  const small=calculate(plan(['gypsum'],s=>{s.skip.on=false;s.jobs.gypsum.variant='lining';s.jobs.gypsum.qty=5;}));
+  close(small.rows[0].central,400);
+});
+test('gypsum board types add to the m² price; plastering ignores the board',()=>{
+  const base=s=>{s.skip.on=false;s.jobs.gypsum.variant='partitionins';s.jobs.gypsum.qty=20;};
+  close(calculate(plan(['gypsum'],base)).rows[0].central,1100);
+  close(calculate(plan(['gypsum'],s=>{base(s);s.jobs.gypsum.board='bmr';})).rows[0].central,(55+8)*20);
+  close(calculate(plan(['gypsum'],s=>{base(s);s.jobs.gypsum.board='bfire';})).rows[0].central,(55+12)*20);
+  const plaster=calculate(plan(['gypsum'],s=>{s.skip.on=false;s.jobs.gypsum.variant='plaster';s.jobs.gypsum.qty=20;s.jobs.gypsum.board='bfire';}));
+  close(plaster.rows[0].central,440);assert.equal(plaster.rows[0].board,null);
+});
+test('complexity and commercial factors apply silently',()=>{
+  const s=plan(['flooring'],s=>{s.skip.on=false;s.jobs.flooring.qty=30;});
+  close(calculate(s).rows[0].central,1350);
+  s.jobs.flooring.cx='cuts';close(calculate(s).rows[0].central,1350*1.2);
+  s.jobs.flooring.cx='complex';close(calculate(s).rows[0].central,1350*1.4);
+  s.type='commercial';close(calculate(s).rows[0].central,1350*1.4*1.2);
+});
+test('skip & site preparation is added only when a job is selected',()=>{
+  const r=calculate(plan(['flooring'],s=>{s.jobs.flooring.qty=30;s.skip.qty=2;}));
+  close(r.skip.central,2*250+Math.max(100,1350*.05));
+  close(r.oneOff.central,1350+r.skip.central);
+  assert.equal(r.oneOff.low,r.rows[0].low+r.skip.low);
+  const off=calculate(plan(['flooring'],s=>{s.skip.on=false;}));assert.equal(off.skip,null);
+  assert.notDeepEqual(calculate(plan(['flooring'],s=>{s.skip.qty=0;})).errors,[]);
+});
+test('VAT is included once and invalid inputs never produce a price',()=>{
+  const r=calculate(plan(['bathroom']));close(r.oneOff.tax,r.oneOff.central*19/119);
+  for(const edit of [s=>{s.jobs.bathroom.qty=0;},s=>{s.jobs.bathroom.qty='';},s=>{s.jobs.bathroom.variant='bogus';},s=>{s.jobs.bathroom.cx='x';},s=>{s.type='villa';},s=>{s.location='Mars';},s=>{s.selected=['bathroom','bathroom'];}])
+    assert.notDeepEqual(calculate(plan(['bathroom'],edit)).errors,[]);
+});
+test('every job, type, unit and description is translated in all six languages',()=>{
+  const keys=new Set(Object.keys(COPY.en));
+  for(const lang of ['el','en','ru','uk','he','ro']){
+    for(const key of keys)assert.ok(COPY[lang][key],`${lang}:${key}`);
+    for(const [id,job] of Object.entries(JOBS)){assert.ok(COPY[lang][id]);assert.ok(DESC[lang][id]);assert.ok(COPY[lang]['u_'+job.unit]);for(const v of Object.keys(job.variants))assert.ok(COPY[lang][v],`${lang}:${v}`);}
+  }
+});
+test('customer-facing text never reveals internal factors or unit rates',()=>{
+  const text=JSON.stringify([COPY,DESC]);
+  assert.doesNotMatch(text,/20%|40%|60%|uplift|margin|per m²|€\s?\d/);
+  assert.match(range({low:100,high:200}),/^⁦.*⁩$/);
+});

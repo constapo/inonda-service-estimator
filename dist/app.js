@@ -1,81 +1,81 @@
-import {initI18n,t,translateText,translateBlock,getLanguage} from './i18n.mjs';
-import {incomingJourney,serviceDestination} from './journey.mjs';
+import {initI18n,t,getLanguage,getLocale} from './i18n.mjs';
+import {incomingJourney} from './journey.mjs';
 import {guideAnswer} from './assistant.mjs';
-import {SERVICES,VARIANTS,ONE_OFF,FREQUENCIES,initialState,calculate,money,range,plainNumber,frequencyText,migrateState,applicableValue,internalValue,rateMoney} from './estimator.mjs';
+import {JOBS,BOARDS,COMPLEXITY,LOCATIONS,LOCATION_KEYS,JOB_IMAGES,JOB_PAGES,DESC,MAX_QTY,MAX_SKIPS,initialState,calculate,money,range,copyText} from './estimator.mjs';
 const $=s=>document.querySelector(s),escape=value=>String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const paths={home:'m3 10 9-7 9 7M5 9v12h14V9M9 21v-8h6v8',building:'M4 21V4h11v17M15 9h5v12M8 8h3M8 12h3M8 16h3M2 21h20',calculator:'M6 3h12v18H6zM9 6h6M9 10h.01M15 10h.01M9 14h.01M15 14h.01M9 18h.01M15 18h.01',bookmark:'M6 3h12v18l-6-4-6 4z',help:'M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4M12 17h.01M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',pin:'M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 0 1 14 0ZM15 10a3 3 0 1 1-6 0 3 3 0 0 1 6 0',check:'m5 12 4 4L19 6',info:'M12 11v6M12 7h.01M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',tools:'m3 21 6-6M14 4l6 6M13 5l4-3 5 5-3 4M12 12l8 8-2 2-8-8M3 3l4 1 2 4-2 2-4-3z',wrench:'M14 4a6 6 0 0 0-7 8L2 17l5 5 5-5a6 6 0 0 0 8-7l-4 4-4-4z',paint:'M4 3h14v7H4zM18 6h3v7h-9v4M10 17h4v5h-4z',sparkles:'m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5zM21 2v4M19 4h4',leaf:'M20 3C8 2 2 7 5 15c3 8 16 7 15-12ZM4 21l12-13',clipboard:'M8 4H5v18h14V4h-3M8 2h8v5H8zM8 12h8M8 16h6',sliders:'M4 7h16M4 17h16M8 4v6M16 14v6',chevron:'m6 9 6 6 6-6',plus:'M12 5v14M5 12h14',download:'M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5',printer:'M6 8V2h12v6M6 18H3V8h18v10h-3M6 14h12v8H6zM17 11h.01',shield:'m12 2 8 3v6c0 5-8 11-8 11S4 16 4 11V5zM8 11l3 3 5-6',close:'m6 6 12 12M6 18 18 6',trash:'M3 6h18M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7'};
 function icon(name){return `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[name]||paths.info}"></path></svg>`;}
 function hydrateIcons(root=document){root.querySelectorAll('i[data-icon]').forEach(el=>el.outerHTML=icon(el.dataset.icon));}
-const entry=incomingJourney(initialState(),location.search);
-let state=entry.state,example=!entry.servicesImported,toastTimer,storageAvailable=true,saved=[];
-try {const entries=JSON.parse(localStorage.getItem('inonda-scenarios-v1')||'[]');saved=Array.isArray(entries)?entries.map(s=>s&&({...s,state:migrateState(s.state)})).filter(s=>s&&typeof s.name==='string'&&s.name.length<=50&&typeof s.id==='string'&&calculate(s.state).errors.length===0).slice(0,3):[];}catch{storageAvailable=false;}
+const STORE='inonda-budget-v2';
+const c=key=>copyText(getLanguage(),key);
+function restore(){try{const raw=JSON.parse(sessionStorage.getItem(STORE)||'null');if(!raw||typeof raw!=='object')return null;const base=initialState();const merged={...base,...raw,skip:{...base.skip,...(raw.skip||{})},jobs:{...base.jobs}};for(const id of Object.keys(JOBS))merged.jobs[id]={...base.jobs[id],...(raw.jobs?.[id]||{})};merged.selected=Array.isArray(raw.selected)?raw.selected.filter(id=>JOBS[id]):[];return calculate(merged).errors.length?null:merged;}catch{return null;}}
+function persist(){try{sessionStorage.setItem(STORE,JSON.stringify(state));}catch{}}
+const entry=incomingJourney(restore()||initialState(),location.search);
+let state=entry.state,toastTimer;
 function toast(message){$('#toast').textContent=message;$('#toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').hidden=true,4500);}
-function inputField(id,key,label,value,{suffix='',min=0,max=10000,step='any'}={}){return `<label>${label}<span class="input-suffix"><input data-service="${id}" data-key="${key}" type="number" min="${min}" max="${['rate','minimum'].includes(key)?applicableValue(state,max):max}" step="${step}" value="${escape(['rate','minimum'].includes(key)?applicableValue(state,value):value)}" aria-label="${SERVICES[id].name} ${label}" inputmode="decimal"><span>${suffix}</span></span></label>`;}
-function frequencyField(id,s){if(ONE_OFF.includes(id)||id==='management')return '';const opts=id==='maintenance'?FREQUENCIES.slice(0,2):FREQUENCIES;return `<label>Frequency<select data-service="${id}" data-key="frequency" aria-label="${SERVICES[id].name} frequency">${opts.map(f=>`<option value="${f.value}" ${Number(s.frequency)===f.value?'selected':''}>${f.label}</option>`).join('')}</select></label>`;}
-const SERVICE_IMAGES={maintenance:'https://www.inonda.org/assets/img/maintenance.webp',renovation:'https://www.inonda.org/assets/img/kitchen.webp',cleaning:'https://www.inonda.org/assets/img/hero.webp',handyman:'https://www.inonda.org/assets/img/plumbing.webp',landscaping:'https://www.inonda.site/assets/hero-sm.webp',aluminium:'https://www.inonda.org/assets/img/aluminium.webp',hpl:'https://www.inonda.org/assets/img/hpl.webp',decor:'https://www.inonda.org/assets/img/decor.webp',management:'https://www.inonda.site/assets/hero.webp'};
-function renderCards(){ $('#service-grid').innerHTML=Object.entries(SERVICES).map(([id,s])=>`<button type="button" class="service-card ${state.selected.includes(id)?'selected':''}" data-toggle="${id}" aria-pressed="${state.selected.includes(id)}"><img class="service-photo" src="${SERVICE_IMAGES[id]}" alt="" loading="lazy" width="480" height="320"><span class="service-check">${icon('check')}</span><span class="service-card-body"><h3>${s.name}</h3><p>${s.description}</p></span></button>`).join('');$('#selection-count').textContent=`${state.selected.length} selected`;$('#example-note').hidden=!example;}
-function renderDetails(){
-  const result=calculate(state);
-  $('#service-details').innerHTML=state.selected.length?state.selected.map(id=>{
-    const def=SERVICES[id],s=state.services[id],row=result.rows.find(x=>x.id===id),variant=VARIANTS[id];
-    const variantField=variant?`<label class="wide">Service scope<select data-service="${id}" data-key="variant" aria-label="${def.name} service scope">${Object.entries(variant).map(([k,v])=>`<option value="${k}" ${s.variant===k?'selected':''}>${v.label}</option>`).join('')}</select></label>`:'';
-    const quantityLabel=['cleaning','renovation','aluminium','hpl','decor'].includes(id)?'Area':id==='landscaping'?'Outdoor area':id==='handyman'?'Labour hours':id==='management'?'Managed units':'Inspection visits';
-    const quantityMin=id==='handyman'?.5:1,quantityMax=['cleaning','renovation'].includes(id)?Number(state.size):id==='landscaping'?100000:id==='handyman'?500:id==='maintenance'?100:1000;
-    return `<div class="service-detail" data-detail="${id}"><div class="detail-top"><strong>${icon(def.icon)}${def.name}</strong><span data-line-total="${id}">${row&&!result.errors.length?money(row.base)+(row.recurring?' / mo':''):''}</span></div><div class="detail-fields">${variantField}${inputField(id,'quantity',quantityLabel,s.quantity,{min:quantityMin,max:quantityMax,step:['maintenance','management'].includes(id)?1:'any',suffix:def.unit==='m²'?'m²':def.unit==='hour'?'hrs':def.unit+'s'})}${frequencyField(id,s)}${inputField(id,'rate',`Rate / ${def.unit}${id==='management'?' / mo':''}`,s.rate,{suffix:'€'})}${inputField(id,'minimum',id==='maintenance'?'Minimum / period':id==='management'?'Minimum / month':'Minimum / visit',s.minimum,{suffix:'€',max:1000000})}</div><p class="detail-bottom"><span data-line-formula="${id}">${row?formula(row):''}</span><br>${escape(variant?.[s.variant]?.scope||def.scope)}</p><a class="detail-service-link" href="${serviceDestination(id,getLanguage())}">${id==='management'?'Explore management services on inonda.site':'Explore detailed services on inonda.org'} ↗</a></div>`;
-  }).join(''):`<div class="empty-details">${icon('plus')}Choose a service above to start building your scope.</div>`;
+const unit=id=>c('u_'+JOBS[id].unit);
+const usesBoard=id=>Boolean(JOBS[id].boards)&&state.jobs[id].variant!=='plaster';
+function options(list,current,label=x=>c(x)){return list.map(v=>`<option value="${escape(v)}" ${v===current?'selected':''}>${escape(label(v))}</option>`).join('');}
+function jobMarkup(id){
+  const on=state.selected.includes(id),j=state.jobs[id],body=`bp-job-${id}`;
+  return `<div class="bp-job ${on?'on':''}" data-id="${id}">
+    <button type="button" class="bp-job-head" aria-expanded="${on}" aria-controls="${body}"><span class="bp-tick" aria-hidden="true">${on?icon('check'):''}</span><span class="bp-job-title">${escape(c(id))}</span><span class="bp-job-price" data-price="${id}"></span></button>
+    <div class="bp-job-body" id="${body}" ${on?'':'hidden'}>
+      <label class="bp-field bp-wide"><span>${escape(c('type'))}</span><select data-k="variant">${options(Object.keys(JOBS[id].variants),j.variant)}</select></label>
+      <label class="bp-field"><span>${escape(c('qtyl'))} (${escape(unit(id))})</span><input data-k="qty" type="number" inputmode="decimal" min="1" max="${MAX_QTY}" step="any" value="${escape(j.qty)}"></label>
+      ${usesBoard(id)?`<label class="bp-field"><span>${escape(c('boardl'))}</span><select data-k="board">${options(Object.keys(BOARDS),j.board)}</select></label>`:''}
+      <label class="bp-field"><span>${escape(c('complexity'))}</span><select data-k="cx">${options(Object.keys(COMPLEXITY),j.cx)}</select></label>
+    </div></div>`;
 }
-function formula(row){return `${plainNumber(row.quantity)} ${row.unit}${row.unit==='m²'||row.quantity===1?'':'s'} × ${rateMoney(applicableValue(state,row.rate))} incl. VAT${row.minimumApplied?' · minimum '+rateMoney(applicableValue(state,row.minimum))+' applied':''}${row.conditionFactor!==1?' · condition × '+row.conditionFactor:''}${row.recurring&&row.id!=='management'?' · '+plainNumber(row.frequency)+' visits / month':''}${row.travelCost?' · '+money(row.travelCost)+' travel':''}`;}
-function renderTotals(){
-  const r=calculate(state),valid=!r.errors.length;
-  $('#mobile-total').textContent=!valid?'Check inputs':!state.selected.length?'Choose your services':r.rows.some(x=>!x.recurring)?range(r.oneOff)+(r.rows.some(x=>x.recurring)?' + monthly':''):range(r.monthly)+' / mo';
-  $('#estimate-property').textContent=`${state.type==='commercial'?'Commercial':'Residential'} · ${state.location} · ${state.size||'—'} m²`;
-  $('#property-checklist').innerHTML=(state.type==='commercial'?['Confirm working hours and public access.','Allow for safety procedures and occupier coordination.','Agree a service schedule around your operations.']:['Confirm access, parking and key arrangements.','Note whether the property is occupied or empty.','Agree the rooms and outdoor areas in scope.']).map(s=>`<li>${icon('check')}${s}</li>`).join('');
-  $('#property-error').hidden=valid;$('#property-error').textContent=r.errors.join(' ');
-  $('#size').setAttribute('aria-invalid',String(!Number.isInteger(Number(state.size))||Number(state.size)<10||Number(state.size)>10000||state.size===''));
-  for(const id of ['download','print','save-scenario'])$(('#'+id)).disabled=!valid||!state.selected.length;
-  if(!valid){$('#estimate-totals').innerHTML='<div class="error-summary">Check your inputs to calculate a reliable range.</div>';$('#estimate-breakdown').innerHTML='';$('#estimate-adjustments').innerHTML='';return r;}
-  if(!state.selected.length){$('#estimate-totals').innerHTML='<div class="total-group"><div class="total-label">Your plan starts here</div><div class="total-value">Let’s build it.</div><p class="total-meta">Choose at least one service to see an estimate.</p></div>';$('#estimate-breakdown').innerHTML='';$('#estimate-adjustments').innerHTML='';return r;}
-  const hasOneOff=r.rows.some(s=>!s.recurring),hasMonthly=r.rows.some(s=>s.recurring);
-  $('#estimate-totals').innerHTML=(hasOneOff?`<div class="total-group"><div class="total-label">Estimated one-off budget</div><div class="total-value" data-testid="oneoff-range">${range(r.oneOff)}</div><div class="total-meta">Includes 19% VAT · selected project scope</div></div>`:'')+(hasMonthly?`<div class="total-group monthly"><div class="total-label">Estimated monthly budget</div><div class="total-value" data-testid="monthly-range">${range(r.monthly)}</div><div class="total-meta">Includes 19% VAT · per month</div></div>`:`<div class="monthly-placeholder"><strong>Ongoing care?</strong> Add management or recurring visits to explore a monthly plan.</div>`);
-  $('#estimate-breakdown').innerHTML='<div class="breakdown-title">Your scope at a glance</div>'+r.rows.map(row=>`<div class="line-item"><span>${row.name}<small>${plainNumber(row.quantity)} ${row.unit}${row.unit==='m²'||row.quantity===1?'':'s'} · ${frequencyText(row)}</small></span><span>${money(row.base)}${row.recurring?' / mo':''}</span></div>`).join('')+'<div class="total-meta">Line items are central allowances including 19% VAT, before any reserve.</div>';
-  $('#estimate-adjustments').innerHTML=[['Condition allowance',state.condition==='1'||Number(state.condition)===1?'None':`+${Math.round((Number(state.condition)-1)*100)}% · on-site work`],['Range around allowance',`±${state.uncertainty}%`],...(Number(state.reserve)?[['Budget reserve',`+${state.reserve}%`]]:[]),...[[hasOneOff?'One-off central incl. VAT':'Monthly central incl. VAT',money(hasOneOff?r.oneOff.central:r.monthly.central)],...(hasOneOff&&hasMonthly?[['Monthly central incl. VAT',money(r.monthly.central)]]:[]),...(hasOneOff?[['One-off before VAT',money(r.oneOff.net)],['19% VAT included · one-off',money(r.oneOff.tax)]]:[]),...(hasMonthly?[['Monthly before VAT',money(r.monthly.net)],['19% VAT included · monthly',money(r.monthly.tax)]]:[])],...(Number(state.travel)?[['Travel allowance',`${rateMoney(applicableValue(state,state.travel))} / visit`]]:[])].map(([k,v])=>`<p><span>${k}</span><span>${escape(v)}</span></p>`).join('');
-  $('#tax-status').textContent='Includes 19% VAT.';
-  r.rows.forEach(row=>{const total=$(`[data-line-total="${row.id}"]`),f=$(`[data-line-formula="${row.id}"]`);if(total)total.textContent=money(row.base)+(row.recurring?' / mo':'');if(f)f.textContent=formula(row);});
+function skipMarkup(){const on=state.skip.on;return `<div class="bp-job bp-skip ${on?'on':''}"><button type="button" class="bp-job-head" id="bp-skip-toggle" aria-expanded="${on}" aria-controls="bp-skip-body"><span class="bp-tick" aria-hidden="true">${on?icon('check'):''}</span><span class="bp-job-title">${escape(c('skip'))}<small>${escape(c('skipnote'))}</small></span><span class="bp-job-price" id="bp-skip-price"></span></button><div class="bp-job-body" id="bp-skip-body" ${on?'':'hidden'}><label class="bp-field"><span>${escape(c('qtyl'))} (${escape(c('u_skip'))})</span><input id="bp-skip-qty" type="number" inputmode="numeric" min="1" max="${MAX_SKIPS}" step="1" value="${escape(state.skip.qty)}"></label></div></div>`;}
+function renderStatic(){
+  document.querySelectorAll('[data-c]').forEach(el=>el.textContent=c(el.dataset.c));
+  document.querySelectorAll('.bp-seg [data-type]').forEach(b=>{b.textContent=c(b.dataset.type);b.setAttribute('aria-pressed',String(b.dataset.type===state.type));});
+  $('#bp-location').innerHTML=options(LOCATIONS,state.location,l=>c(LOCATION_KEYS[l]));
+  $('#bp-jobs').innerHTML=Object.keys(JOBS).map(jobMarkup).join('')+skipMarkup();
+  const lang=getLanguage();
+  $('#bp-grid').innerHTML=Object.keys(JOBS).map(id=>`<article class="bp-tile"><img src="https://www.inonda.org/assets/img/${JOB_IMAGES[id]}-sm.webp" alt="" loading="lazy" decoding="async" width="480" height="320"><div><h3>${escape(c(id))}</h3><p>${escape(DESC[lang]?.[id]||DESC.en[id])}</p><a href="https://www.inonda.org/${lang}/${JOB_PAGES[id]}" target="_blank" rel="noopener">${escape(c('more'))} <span aria-hidden="true">↗</span></a></div></article>`).join('');
+  update();
+}
+function lineMarkup(name,sub,price){return `<li><span>${escape(name)}<small>${escape(sub)}</small></span><span>${price}</span></li>`;}
+function update(){
+  const r=calculate(state),valid=!r.errors.length,has=r.rows.length>0;
+  document.querySelectorAll('[data-price]').forEach(el=>{const row=r.rows.find(x=>x.id===el.dataset.price);el.textContent=row&&valid?range(row):'';});
+  $('#bp-skip-price').textContent=r.skip&&valid?range(r.skip):'';
+  const total=has&&valid?range(r.oneOff):'—';
+  $('#bp-total').textContent=total;$('#mobile-total').textContent=total;$('.bp-mobile').hidden=!has;
+  if(!valid){$('#bp-lines').innerHTML=`<li class="bp-error" role="alert">${escape(r.errors[0])}</li>`;}
+  else $('#bp-lines').innerHTML=has?r.rows.map(row=>lineMarkup(c(row.id),`${c(row.variant)}${row.board&&row.board!=='bstd'?' · '+c(row.board):''} · ${row.qty} ${unit(row.id)}`,range(row))).join('')+(r.skip?lineMarkup(c('skip'),`${r.skip.qty} ${c('u_skip')}`,range(r.skip)):''):`<li class="bp-empty">${escape(c('empty'))}</li>`;
+  for(const id of ['print','bp-clear'])$('#'+id).disabled=!has;
+  $('#bp-book').href='https://wa.me/35794091616?text='+encodeURIComponent(planText(r));
+  persist();
   return r;
 }
-function syncProperty(){['location','size','condition','uncertainty','reserve','travel','notes'].forEach(id=>$('#'+id).value=state[id]);$('#travel').value=applicableValue(state,state.travel);$('#travel').max=applicableValue(state,500);$('#size-range').value=Math.min(1000,Number(state.size));document.querySelectorAll('[data-type]').forEach(b=>{b.classList.toggle('selected',b.dataset.type===state.type);b.setAttribute('aria-pressed',String(b.dataset.type===state.type));});}
-function renderAll(){syncProperty();renderCards();renderDetails();renderTotals();renderSaved();}
-function persistSaved(){try{localStorage.setItem('inonda-scenarios-v1',JSON.stringify(saved));return true;}catch{storageAvailable=false;toast('Browser storage is unavailable. Download your plan to keep a copy.');return false;}}
-function renderSaved(){
-  $('#saved-count').textContent=saved.length;
-  $('#saved-scenarios').innerHTML=saved.length?saved.map(s=>{const r=calculate(s.state);return `<article class="scenario"><div><strong data-no-i18n>${escape(s.name)}</strong><p>${escape(s.state.type)} · ${escape(s.state.location)} · ${s.state.size} m² · ${s.state.selected.length} services</p><div class="prices">${r.rows.some(x=>!x.recurring)?range(r.oneOff)+' one-off':''}${r.rows.some(x=>x.recurring)?(r.rows.some(x=>!x.recurring)?'<br>':'')+range(r.monthly)+' / month':''}</div></div><div class="scenario-actions"><button data-restore="${escape(s.id)}" aria-label="Restore ${escape(s.name)}">Restore</button><button data-delete="${escape(s.id)}" aria-label="Delete ${escape(s.name)}">${icon('trash')}</button></div></article>`;}).join(''):'<div class="saved-empty">Your saved plans will appear here. No account or enquiry needed.</div>';
+function planText(r=calculate(state)){
+  const lines=[c('msg')];
+  for(const row of r.rows)lines.push(`• ${c(row.id)} – ${c(row.variant)}${row.board&&row.board!=='bstd'?', '+c(row.board):''}, ${row.qty} ${unit(row.id)}${state.jobs[row.id].cx!=='standard'?', '+c(state.jobs[row.id].cx):''}`);
+  if(r.skip)lines.push(`• ${c('skip')} – ${r.skip.qty} ${c('u_skip')}`);
+  lines.push(`${c('ptype')}: ${c(state.type)}`,`${c('location')}: ${c(LOCATION_KEYS[state.location])}`);
+  if(r.rows.length&&!r.errors.length)lines.push(`${c('total')}: ${range(r.oneOff).replace(/[\u2066\u2069]/g,'')} (${c('incl')})`);
+  return lines.join('\n');
 }
-function planText(){
- const r=calculate(state),date=new Date().toLocaleDateString(document.documentElement.lang,{timeZone:'Asia/Nicosia'}),lines=[t('INONDA LTD — PROPERTY SERVICE PLANNING ESTIMATE'),t('Prepared: {date}',{date}),t('Illustrative budget only; not a quotation or booking.'),'',t('PROPERTY'),`${t(state.type)} · ${t(state.location)} · ${state.size} m²`,t('Condition factor: {factor} (management excluded)',{factor:state.condition}),'',t('SELECTED SCOPE')];
- for(const row of r.rows)lines.push(`${t(row.name)}: ${t(row.scope)}`,translateText(formula(row)),t('Minimum incl. VAT: {amount}',{amount:rateMoney(applicableValue(state,row.minimum))}),t(row.id==='maintenance'?'Per project or month':row.id==='management'?'Per month':'Per visit'),t('Central allowance incl. travel and VAT, before reserve: {amount}',{amount:money(row.base)})+' · '+t(row.recurring?'per month':'one-off'),'');
- lines.push(t('BUDGET'));
- if(r.rows.some(x=>!x.recurring))lines.push(t('One-off central incl. VAT')+': '+money(r.oneOff.central),t('One-off before VAT')+': '+money(r.oneOff.net),t('19% VAT included · one-off')+': '+money(r.oneOff.tax),t('Estimated one-off budget')+': '+range(r.oneOff));
- if(r.rows.some(x=>x.recurring))lines.push(t('Monthly central incl. VAT')+': '+money(r.monthly.central),t('Monthly before VAT')+': '+money(r.monthly.net),t('19% VAT included · monthly')+': '+money(r.monthly.tax),t('Estimated monthly budget')+': '+range(r.monthly),t('12-month ongoing range if unchanged: {low} – {high}',{low:money(r.monthly.low*12),high:money(r.monthly.high*12)}));
- lines.push('',t('ASSUMPTIONS'),t('Range: ±{range}%; bounds rounded outward to €5.',{range:state.uncertainty}),t('Reserve: {reserve}% of VAT-inclusive allowances.',{reserve:state.reserve}),t('All rates and totals include 19% VAT. Included VAT = gross × 19 / 119.'),t('Travel allowance')+': '+rateMoney(applicableValue(state,state.travel))+' · '+t('Per visit'),t('Displayed rates apply to the selected property type. No automatic location surcharge.'),t('Weekly visits average 52 ÷ 12 per month. One-off and recurring costs are separate.'),'',t('NOTES'),state.notes||t('No additional notes.'),'',t('EXCLUSIONS & NEXT STEPS'));
- document.querySelectorAll('.scope-disclosure p').forEach(p=>lines.push(p.textContent));
- lines.push('',t('Call and tell us what you need'),t('Arrange a property inspection'),t('Receive your written offer'),'',t('We assess, quote and take on only jobs of more than one day of work. Small repairs, urgent repairs and jobs of a few minutes or hours are carried out only for customers with a maintenance contract. Quotations under a maintenance contract are completely free.'),'','Irina: +357 94 091 616','Constantin: +357 94 091 613','inonda2026@outlook.com',t('INONDA LTD · Registration HE490415'),t('Property services across Cyprus'),t('Written workmanship warranty · minimum 6 months on labour'));
- return lines.join('\n');
-}
-$('#service-grid').addEventListener('click',event=>{const b=event.target.closest('[data-toggle]');if(!b)return;const id=b.dataset.toggle;state.selected=state.selected.includes(id)?state.selected.filter(s=>s!==id):[...state.selected,id];example=false;renderCards();renderDetails();renderTotals();});
-document.querySelectorAll('[data-type]').forEach(b=>b.addEventListener('click',()=>{state.type=b.dataset.type;example=false;syncProperty();renderCards();renderDetails();renderTotals();}));
-['location','size','condition','uncertainty','reserve','travel','notes'].forEach(id=>$('#'+id).addEventListener(id==='location'||id==='condition'?'change':'input',event=>{state[id]=id==='travel'?internalValue(state,event.target.value):event.target.value;example=false;if(id==='size'&&Number.isInteger(Number(state.size))&&Number(state.size)>=10&&Number(state.size)<=10000){$('#size-range').value=Math.min(1000,Number(state.size));for(const sid of ['cleaning','renovation'])state.services[sid].quantity=Math.min(Number(state.services[sid].quantity)||1,Number(state.size));renderDetails();}$('#example-note').hidden=true;renderTotals();}));
-$('#size-range').addEventListener('input',event=>{state.size=Number(event.target.value);$('#size').value=state.size;for(const id of ['cleaning','renovation'])state.services[id].quantity=Math.min(Number(state.services[id].quantity)||1,state.size);example=false;$('#example-note').hidden=true;renderDetails();renderTotals();});
-$('#service-details').addEventListener('input',event=>{const el=event.target;if(!el.dataset.service||el.tagName==='SELECT')return;state.services[el.dataset.service][el.dataset.key]=['rate','minimum'].includes(el.dataset.key)?internalValue(state,el.value):el.value;example=false;$('#example-note').hidden=true;renderTotals();});
-$('#service-details').addEventListener('change',event=>{const el=event.target;if(!el.dataset.service||el.tagName!=='SELECT')return;const s=state.services[el.dataset.service];s[el.dataset.key]=el.value;if(el.dataset.key==='variant'){const variant=VARIANTS[el.dataset.service][el.value];s.rate=variant.rate;s.minimum=variant.minimum;}example=false;$('#example-note').hidden=true;renderDetails();renderTotals();});
-$('#clear-services').addEventListener('click',()=>{state.selected=[];example=false;renderCards();renderDetails();renderTotals();});
-$('#save-scenario').addEventListener('click',()=>{if(calculate(state).errors.length||!state.selected.length)return;if(saved.length>=3){toast('Three plans are saved. Delete one to make room for another.');return;}const name=$('#scenario-name').value.trim()||t('Plan {number}',{number:saved.length+1});saved.push({id:(typeof crypto.randomUUID==='function'?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)),name,state:structuredClone(state)});if(persistSaved()){renderSaved();$('#scenario-name').value='';toast('Scenario saved in this browser.');}else{saved.pop();renderSaved();}});
-$('#saved-scenarios').addEventListener('click',event=>{const restore=event.target.closest('[data-restore]'),remove=event.target.closest('[data-delete]');if(restore){const s=saved.find(s=>s.id===restore.dataset.restore);if(!s)return;state=structuredClone(s.state);example=false;renderAll();toast(t('Restored “{name}”.',{name:s.name}));$('#property').scrollIntoView({behavior:'smooth'});}if(remove){const previous=saved;saved=saved.filter(s=>s.id!==remove.dataset.delete);if(persistSaved()){renderSaved();toast('Scenario deleted.');}else saved=previous;}});
-$('#reset').addEventListener('click',()=>{state=initialState();example=true;renderAll();toast('Example restored. Your saved scenarios are kept.');$('#property').scrollIntoView({behavior:'smooth'});});
-$('#download').addEventListener('click',()=>{if(calculate(state).errors.length||!state.selected.length)return;const blob=new Blob([planText()],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='INONDA-property-service-plan.txt';document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},5000);toast('Your plan includes the full scope and all pricing assumptions.');});
-$('#print').addEventListener('click',()=>{if(calculate(state).errors.length||!state.selected.length)return;$('#print-summary').innerHTML=`<img src="./inonda-logo.png" alt="INONDA LTD" width="130"><h2>Property service planning estimate</h2><pre>${escape(planText())}</pre>`;window.print();});
+function toggleJob(id){state.selected=state.selected.includes(id)?state.selected.filter(x=>x!==id):[...state.selected,id];renderStatic();const head=$(`.bp-job[data-id="${id}"] .bp-job-head`);head?.focus();if(state.selected.includes(id))$(`.bp-job[data-id="${id}"] [data-k="qty"]`)?.scrollIntoView({block:'nearest',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}
+$('#bp-jobs').addEventListener('click',event=>{
+  if(event.target.closest('#bp-skip-toggle')){state.skip.on=!state.skip.on;renderStatic();$('#bp-skip-toggle').focus();return;}
+  const head=event.target.closest('.bp-job-head');if(head)toggleJob(head.closest('.bp-job').dataset.id);
+});
+$('#bp-jobs').addEventListener('input',event=>{const el=event.target;
+  if(el.id==='bp-skip-qty'){state.skip.qty=el.value;update();return;}
+  const k=el.dataset.k;if(!k)return;const id=el.closest('.bp-job').dataset.id;state.jobs[id][k]=el.value;
+  if(k==='variant'){renderStatic();$(`.bp-job[data-id="${id}"] [data-k="variant"]`)?.focus();}else update();
+});
+document.querySelectorAll('.bp-seg [data-type]').forEach(b=>b.addEventListener('click',()=>{state.type=b.dataset.type;renderStatic();}));
+$('#bp-location').addEventListener('change',event=>{state.location=event.target.value;update();});
+$('#bp-clear').addEventListener('click',()=>{state.selected=[];renderStatic();$('#bp-title').scrollIntoView({behavior:'smooth'});});
+$('#print').addEventListener('click',()=>{const r=calculate(state);if(r.errors.length||!r.rows.length)return;$('#print-summary').innerHTML=`<img src="./inonda-logo.png" alt="INONDA LTD" width="130"><h2>${escape(c('title'))}</h2><pre>${escape(planText(r).split('\n').slice(1).join('\n'))}</pre><p>${escape(c('disclaimer'))}</p><p>Irina: +357 94 091 616 · Constantin: +357 94 091 613 · inonda2026@outlook.com</p>`;window.print();});
 $('#how-button').addEventListener('click',()=>{$('#site-menu').close();$('#how-dialog').showModal();});$('#close-dialog').addEventListener('click',()=>$('#how-dialog').close());$('#how-dialog').addEventListener('click',event=>{if(event.target===$('#how-dialog')){const box=$('#how-dialog').getBoundingClientRect();if(event.clientX<box.left||event.clientX>box.right||event.clientY<box.top||event.clientY>box.bottom)$('#how-dialog').close();}});
-hydrateIcons();renderAll();initI18n();
-document.addEventListener('inonda:language',()=>renderAll());
+hydrateIcons();initI18n();renderStatic();
+document.addEventListener('inonda:language',()=>renderStatic());
 
 const siteMenu=$('#site-menu');
 $('#menu-button').addEventListener('click',()=>{siteMenu.showModal();$('#menu-button').setAttribute('aria-expanded','true');});
@@ -87,5 +87,5 @@ function motionState(){const playing=!heroVideo.paused;motionButton.textContent=
 motionButton.addEventListener('click',async()=>{if(!heroVideo.paused){heroVideo.pause();return;}if(!heroVideo.src)heroVideo.src=heroVideo.dataset.src;try{await heroVideo.play();}catch{toast('The film could not start. You can still explore all services below.');}});
 heroVideo.addEventListener('playing',()=>{$('#hero-poster').hidden=true;});heroVideo.addEventListener('error',()=>{$('#hero-poster').hidden=false;motionState();});heroVideo.addEventListener('play',motionState);heroVideo.addEventListener('pause',motionState);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)heroVideo.pause();});
-document.addEventListener('inonda:guide-question',event=>{const answer=guideAnswer(event.detail.question,{result:calculate(state),property:state.type,location:state.location,size:state.size});event.detail.answer={...answer,text:t(answer.text),label:t(answer.label)};});
-document.addEventListener('inonda:add-services',event=>{const ids=event.detail?.services;if(!Array.isArray(ids)||!ids.every(id=>Object.hasOwn(SERVICES,id)))return;state.selected=[...new Set([...state.selected,...ids])];example=false;renderAll();});
+document.addEventListener('inonda:guide-question',event=>{const answer=guideAnswer(event.detail.question,{result:calculate(state),property:state.type,location:state.location});event.detail.answer={...answer,text:t(answer.text),label:t(answer.label)};});
+document.addEventListener('inonda:add-services',event=>{const ids=event.detail?.services;if(!Array.isArray(ids))return;const valid=ids.filter(id=>Object.hasOwn(JOBS,id));if(!valid.length)return;state.selected=[...new Set([...state.selected,...valid])];renderStatic();});

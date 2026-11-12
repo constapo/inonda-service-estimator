@@ -8,14 +8,15 @@ Always use the supplied official INONDA LTD logo (`dist/inonda-logo.png`). Prese
 
 ## What works
 
-- Six combinable services: maintenance, renovation, cleaning, handyman, landscaping and management.
-- Residential/commercial property, Cyprus location, size and condition.
-- Editable quantities, rates, minimums and frequencies, with clear scope and exclusions.
-- Separate one-off and monthly budget ranges, optional reserve and travel, with 19% VAT included in every price.
-- Up to three scenarios saved in the visitor's browser; download a detailed text plan or print/save as PDF.
-- Responsive layout, labelled controls, reduced-motion support and no external frontend dependencies.
+- A budget planner dashboard for potential customers, separate from the photos. Visitors tick job titles; there is no picture-based selection.
+- One-off jobs only: flooring & tiling, kitchens, bathrooms, painting, gypsum board & plastering, plumbing, electrical, roofing & waterproofing, doors & carpentry, outdoor works, aluminium, HPL cladding, decorative panels and renovation.
+- Maintenance, management, cleaning, garden care, contract repairs and urgent repairs are contract-only work and are deliberately not in the planner.
+- Each job has a type of work, a quantity in its own unit, a job complexity and (gypsum) a board type. A skip & site preparation line is added automatically and can be unticked.
+- Prices always include materials, installation and 19% VAT. The page shows only price ranges per job and in total, never unit rates, material prices or internal factors.
+- Below the planner, an information-only "What we do" photo section links to the service pages on inonda.org.
+- Mobile first: the hero button lands on the planner, every control is at least 44 px tall and a sticky bottom bar shows the current total. Book an inspection opens WhatsApp to Irina with the job list, only on the visitor's click. Save as PDF prints the plan.
 
-All starting prices are illustrative assumptions, not approved INONDA tariffs or verified Cyprus market prices. No enquiry, booking or payment is submitted.
+All prices are planning guides for the owner to adjust in `dist/estimator.mjs`; they are not quotations.
 
 ## Hosting and remote updates
 
@@ -33,9 +34,7 @@ Desktop and mobile UI checks cover service combinations, monthly versus one-off 
 
 ## Calculation rules
 
-Service allowance = max(quantity × rate, minimum) × condition factor × recurring frequency, plus travel. Management has no condition factor. Maintenance quantity is inspection visits per period; its minimum is per project/month. Other on-site minimums apply per visit. Weekly frequency averages 52/12 visits per month. All monetary inputs are VAT-inclusive. Reserve applies to these gross allowances; VAT is extracted once as gross × 19/119 and shown separately. Range bounds round outward to €5. Older locally saved net rates migrate once to VAT-inclusive amounts.
-
-Location adds no automatic surcharge. Commercial properties retain an internal 20% factor on every service, including minimums and travel. Public controls, formulas and exports show applicable VAT-inclusive rates without identifying the factor, as requested by the owner. Residential properties have no uplift. Cleaning and renovation areas cannot exceed indoor size; garden area is independent.
+Job price = max(quantity × (unit price + gypsum board extra), minimum job price) × complexity × property factor. Complexity: standard ×1, many cuts & details ×1.2, complex / hard access ×1.4. Commercial properties ×1.2; residential ×1. Skip & site preparation = (skips × €250 + max(€100, 5% of the job total)) × property factor. Each line shows ±15% rounded outward to €5; the total is the sum of the lines. All amounts include 19% VAT (included VAT = gross × 19/119). The complexity extras, the commercial factor, unit prices and the materials share are internal and must never appear in page copy, the PDF, the WhatsApp text or the guide. The owner's pricing rule: about 60% of each job price is company income and about 40% materials.
 
 This repository does not change inonda.site or inonda.org.
 
