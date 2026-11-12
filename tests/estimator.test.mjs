@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {initialState,calculate,JOBS,COPY,DESC,range,PLACES,PLACE_BY_ID,distanceKm,travelCharge,findPlace} from '../dist/estimator.mjs';
+import {initialState,calculate,JOBS,COPY,DESC,range,PLACES,PLACE_BY_ID,distanceKm,travelCharge,findPlace,variantUnit,variantQty} from '../dist/estimator.mjs';
 const plan=(ids,edit=()=>{})=>{const s=initialState();s.selected=ids;edit(s);return s;};
 const close=(a,b)=>assert.ok(Math.abs(a-b)<1e-9,`${a} ≠ ${b}`);
 
@@ -88,3 +88,15 @@ test('places are found by English or Greek name, with or without accents',()=>{
   for(const p of PLACES)assert.ok(distanceKm(p.lat,p.lon)<260,p.id);
 });
 test('location texts exist in all six languages',()=>{for(const lang of ['el','en','ru','uk','he','ro'])for(const key of ['where','placeLabel','placeHint','myLoc','locFail','outside','notListed','needPlace','travel','travelFree','kmFrom','myPlace','locNote'])assert.ok(COPY[lang][key],lang+':'+key);});
+test('welding: each type has its own unit, default quantity and minimum, and travel applies as usual',()=>{
+  const s=initialState();s.selected=['welding'];s.skip.on=false;s.place={id:'larnaca'};
+  const units={railing:'lm',railinggalv:'lm',steelfence:'lm',gateswing:'piece',gatesliding:'piece',grille:'piece',canopy:'m2'};
+  for(const[v,u]of Object.entries(units)){
+    s.jobs.welding.variant=v;s.jobs.welding.qty=variantQty('welding',v);
+    const r=calculate(s);assert.deepEqual(r.errors,[]);assert.equal(r.rows[0].unit,u);assert.equal(variantUnit('welding',v),u);
+    assert.ok(r.rows[0].central>0);assert.equal(r.travel.amount,30);
+  }
+  s.jobs.welding.variant='gateswing';s.jobs.welding.qty=1;const one=calculate(s).rows[0].central;
+  s.jobs.welding.variant='railing';s.jobs.welding.qty=1;assert.ok(calculate(s).rows[0].central<one,'short railing falls back to its minimum');
+  for(const lang of ['el','en','ru','uk','he','ro'])assert.notEqual(COPY[lang].steelfence,COPY[lang].fence,'outdoor fencing label stays separate');
+});

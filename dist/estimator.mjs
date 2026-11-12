@@ -19,6 +19,7 @@ export const JOBS={
  aluminium:{unit:'m2',qty:8,variants:{windows:[345.1,1380.4],sliding:[440.3,1761.2],shutters:[172.55,690.2],enclosure:[404.6,2427.6],pergola:[535.5,6426]}},
  hpl:{unit:'m2',qty:20,variants:{interior:[130.9,1309],facade:[196.35,3927],compact:[214.2,1071]}},
  decor:{unit:'m2',qty:15,variants:{pvc:[83.3,666.4],wpc:[101.15,809.2],acoustic:[142.8,1142.4]}},
+ welding:{unit:'lm',qty:10,variants:{railing:[180,500,'lm',10],railinggalv:[240,600,'lm',10],steelfence:[120,500,'lm',15],gateswing:[1400,1400,'piece',1],gatesliding:[2000,2000,'piece',1],grille:[220,300,'piece',2],canopy:[160,1200,'m2',10]}},
  renovation:{unit:'m2',qty:25,variants:{cosmetic:[53.55,535.5],partial:[190.4,1785],full:[499.8,5950]}}
 };
 export const BOARDS={bstd:0,bmr:8,bfire:12};      // € per m² extra, gypsum only
@@ -31,8 +32,10 @@ export const LOCATIONS=['Nicosia','Limassol','Larnaca','Paphos','Famagusta distr
 export const LOCATION_KEYS={'Nicosia':'nicosia','Limassol':'limassol','Larnaca':'larnaca','Paphos':'paphos','Famagusta district':'famagusta','Other location in Cyprus':'other'};
 // Legacy name kept for the cross-site journey and guide: every job is a selectable service.
 export const SERVICES=JOBS;
-export const JOB_IMAGES={flooring:'tiling',kitchen:'kitchen',bathroom:'bathroom',painting:'painting',gypsum:'renovation',plumbing:'plumbing',electrical:'electrical',roofing:'roof',doors:'carpentry',outdoor:'outdoor',aluminium:'aluminium',hpl:'hpl',decor:'decor',renovation:'renovation'};
-export const JOB_PAGES={flooring:'flooring-tiling/',kitchen:'kitchen-renovation/',bathroom:'bathroom-renovation/',painting:'painting-plastering-gypsum/',gypsum:'painting-plastering-gypsum/',plumbing:'plumbing-services/',electrical:'electrical-services/',roofing:'roof-waterproofing-damp/',doors:'doors-windows-carpentry/',outdoor:'outdoor-works/',aluminium:'aluminium-works/',hpl:'hpl-cladding/',decor:'decorative-panels/',renovation:'home-renovation/'};
+export const variantUnit=(id,variant)=>JOBS[id]?.variants[variant]?.[2]||JOBS[id]?.unit;
+export const variantQty=(id,variant)=>JOBS[id]?.variants[variant]?.[3]??JOBS[id]?.qty;
+export const JOB_IMAGES={welding:'handyman',flooring:'tiling',kitchen:'kitchen',bathroom:'bathroom',painting:'painting',gypsum:'renovation',plumbing:'plumbing',electrical:'electrical',roofing:'roof',doors:'carpentry',outdoor:'outdoor',aluminium:'aluminium',hpl:'hpl',decor:'decor',renovation:'renovation'};
+export const JOB_PAGES={welding:'outdoor-works/',flooring:'flooring-tiling/',kitchen:'kitchen-renovation/',bathroom:'bathroom-renovation/',painting:'painting-plastering-gypsum/',gypsum:'painting-plastering-gypsum/',plumbing:'plumbing-services/',electrical:'electrical-services/',roofing:'roof-waterproofing-damp/',doors:'doors-windows-carpentry/',outdoor:'outdoor-works/',aluminium:'aluminium-works/',hpl:'hpl-cladding/',decor:'decorative-panels/',renovation:'home-renovation/'};
 export function initialState(){return {type:'residential',place:null,selected:[],skip:{on:true,qty:1},jobs:Object.fromEntries(Object.entries(JOBS).map(([id,j])=>[id,{qty:j.qty,variant:Object.keys(j.variants)[0],cx:'standard',board:'bstd'}]))};}
 const numeric=v=>v!==''&&v!==null&&typeof v!=='boolean'&&Number.isFinite(Number(v));
 const band=central=>central===0?{low:0,high:0,central:0}:{central,low:Math.floor(central*(1-SPREAD)/5)*5,high:Math.ceil(central*(1+SPREAD)/5)*5};
@@ -55,7 +58,7 @@ export function calculate(state){
     const [rate,minimum]=v,qty=Number(j.qty);
     const central=Math.max(qty*(rate+board),minimum)*COMPLEXITY[j.cx]*factor;
     jobsCentral+=central;
-    rows.push({id,variant:j.variant,board:usesBoard?j.board:null,qty,unit:def.unit,...band(central)});
+    rows.push({id,variant:j.variant,board:usesBoard?j.board:null,qty,unit:v[2]||def.unit,...band(central)});
   }
   let skip=null;
   if(rows.length&&state.skip?.on){
@@ -188,3 +191,17 @@ uk:{where:'Де знаходиться об’єкт?',placeLabel:'Місто а
 he:{where:'איפה העבודה?',placeLabel:'עיר או כפר',placeHint:'התחילו להקליד, למשל Limassol',myLoc:'שימוש במיקום שלי',locating:'מאתרים את המיקום…',locFail:'לא הצלחנו לאתר את המיקום. הקלידו את שם העיר או הכפר.',outside:'המיקום מחוץ לאזור השירות שלנו בקפריסין.',notListed:'בחרו עיר או כפר מהרשימה, או השתמשו במיקום שלכם.',needPlace:'הוסיפו את מיקום העבודה כדי לראות את התקציב הכולל.',travel:'נסיעה',travelFree:'כלול (עד 20 ק״מ מניקוסיה)',kmFrom:'≈{km} ק״מ מניקוסיה',myPlace:'המיקום שלי',locNote:'המחירים הם לניקוסיה. מעבר ל-20 ק״מ נוסף תשלום נסיעה קטן.'},
 ro:{where:'Unde este lucrarea?',placeLabel:'Oraș sau sat',placeHint:'Începe să scrii, de ex. Limassol',myLoc:'Folosește locația mea',locating:'Se caută locația…',locFail:'Nu am putut afla locația. Scrie orașul sau satul.',outside:'Locația este în afara zonei noastre de servicii din Cipru.',notListed:'Alege un oraș sau sat din listă ori folosește locația ta.',needPlace:'Adaugă locația lucrării pentru a vedea bugetul total.',travel:'Deplasare',travelFree:'Inclusă (până la 20 km de Nicosia)',kmFrom:'≈{km} km de Nicosia',myPlace:'Locația mea',locNote:'Prețurile sunt pentru Nicosia. Peste 20 km se adaugă o mică taxă de deplasare.'}};
 for(const l in WHERE)Object.assign(COPY[l],WHERE[l]);
+const WELD={
+en:{welding:'Welding & metalwork',railing:'Steel railing, painted',railinggalv:'Galvanised steel railing',steelfence:'Steel fence',gateswing:'Steel swing gate',gatesliding:'Steel sliding gate (no motor)',grille:'Window security grille',canopy:'Steel frame / canopy / pergola'},
+el:{welding:'Συγκολλήσεις & σιδηροκατασκευές',railing:'Σιδερένιο κάγκελο, βαμμένο',railinggalv:'Γαλβανιζέ κάγκελο',steelfence:'Σιδερένια περίφραξη',gateswing:'Σιδερένια ανοιγόμενη αυλόπορτα',gatesliding:'Σιδερένια συρόμενη αυλόπορτα (χωρίς μοτέρ)',grille:'Σίδερα ασφαλείας παραθύρου',canopy:'Μεταλλικός σκελετός / στέγαστρο / πέργκολα'},
+ru:{welding:'Сварка и металлоконструкции',railing:'Стальные перила, окрашенные',railinggalv:'Оцинкованные стальные перила',steelfence:'Стальной забор',gateswing:'Стальные распашные ворота',gatesliding:'Стальные откатные ворота (без привода)',grille:'Решётка на окно',canopy:'Стальной каркас / навес / пергола'},
+uk:{welding:'Зварювання та металоконструкції',railing:'Сталеві перила, пофарбовані',railinggalv:'Оцинковані сталеві перила',steelfence:'Сталевий паркан',gateswing:'Сталеві розпашні ворота',gatesliding:'Сталеві відкотні ворота (без приводу)',grille:'Ґрати на вікно',canopy:'Сталевий каркас / навіс / пергола'},
+he:{welding:'ריתוך ומסגרות',railing:'מעקה פלדה צבוע',railinggalv:'מעקה פלדה מגולוון',steelfence:'גדר פלדה',gateswing:'שער פלדה נפתח',gatesliding:'שער פלדה נגרר (ללא מנוע)',grille:'סורג ביטחון לחלון',canopy:'שלד פלדה / סככה / פרגולה'},
+ro:{welding:'Sudură și confecții metalice',railing:'Balustradă din oțel, vopsită',railinggalv:'Balustradă din oțel zincat',steelfence:'Gard din oțel',gateswing:'Poartă batantă din oțel',gatesliding:'Poartă glisantă din oțel (fără motor)',grille:'Grilaj de siguranță pentru fereastră',canopy:'Structură din oțel / copertină / pergolă'}};
+for(const l in WELD)Object.assign(COPY[l],WELD[l]);
+Object.assign(DESC.en,{welding:'Railings, fences, gates, window grilles and steel frames, made to measure, welded and installed.'});
+Object.assign(DESC.el,{welding:'Κάγκελα, περιφράξεις, αυλόπορτες, σίδερα παραθύρων και μεταλλικοί σκελετοί, κατά παραγγελία, συγκολλημένα και τοποθετημένα.'});
+Object.assign(DESC.ru,{welding:'Перила, заборы, ворота, оконные решётки и стальные каркасы на заказ, со сваркой и монтажом.'});
+Object.assign(DESC.uk,{welding:'Перила, паркани, ворота, віконні ґрати та сталеві каркаси на замовлення, зі зварюванням і монтажем.'});
+Object.assign(DESC.he,{welding:'מעקות, גדרות, שערים, סורגים ושלדי פלדה לפי מידה, כולל ריתוך והתקנה.'});
+Object.assign(DESC.ro,{welding:'Balustrade, garduri, porți, grilaje de ferestre și structuri din oțel, la comandă, sudate și montate.'});
