@@ -6,7 +6,7 @@ export function incomingJourney(previous,search=''){
   const query=new URLSearchParams(String(search).slice(0,2000));
   const requested=query.get('services');
   const ids=requested?requested.split(','):[];
-  const selected=ids.length&&ids.length<=6&&ids.every(id=>Object.hasOwn(SERVICES,id))?[...new Set(ids)]:null;
+  const selected=ids.length&&ids.length<=Object.keys(SERVICES).length&&ids.every(id=>Object.hasOwn(SERVICES,id))?[...new Set(ids)]:null;
   const location=query.get('location'),validLocation=LOCATIONS.includes(location);
   if(!selected&&!validLocation)return {state:previous,imported:false,servicesImported:false};
   const state=structuredClone(previous);
@@ -15,7 +15,7 @@ export function incomingJourney(previous,search=''){
   return {state,imported:true,servicesImported:Boolean(selected)};
 }
 
-const pages={maintenance:'maintenance-plans/',renovation:'home-renovation/',cleaning:'contact/#quote',handyman:'contract-repairs/',landscaping:'outdoor-works/',management:'property-management-services/'};
+const pages={maintenance:'maintenance-plans/',renovation:'home-renovation/',cleaning:'contact/#quote',handyman:'contract-repairs/',landscaping:'outdoor-works/',management:'property-management-services/',aluminium:'aluminium-works/',hpl:'hpl-cladding/',decor:'decorative-panels/'};
 export function serviceDestination(id,language='el'){
   if(!Object.hasOwn(pages,id))return null;
   const lang=['el','en','ru','uk','he','ro'].includes(language)?language:'el';
