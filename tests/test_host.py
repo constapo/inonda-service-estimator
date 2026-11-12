@@ -115,7 +115,7 @@ class HostTests(unittest.TestCase):
         self.assertEqual(len(urls), 6)
         self.assertIn('https://www.inonda.homes/', urls)
         for language in ['en', 'ru', 'uk', 'he', 'ro']:
-            self.assertIn('https://www.inonda.homes/?lang=' + language, urls)
+            self.assertIn('https://www.inonda.homes/' + language + '/', urls)
 
     def test_post_cannot_change_the_website(self):
         self.assertEqual(self.request('/', method='POST')[0], 405)
