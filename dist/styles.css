@@ -114,3 +114,4 @@ input[aria-invalid=true]{border-color:#ab352d}
 .bp-dash{grid-template-columns:minmax(0,1fr)}.bp-card,.bp-lines li>span:first-child{min-width:0}.bp-lines li>span:first-child{overflow-wrap:anywhere}
 @media (max-width:380px){.bp-lines li{flex-direction:column;gap:2px}.bp-job-head{flex-wrap:wrap}.bp-job-price{flex-basis:100%;text-align:start;padding-inline-start:38px}}
 @media (min-width:900px){.bp-dash{grid-template-columns:minmax(0,1.6fr) minmax(310px,1fr)}}
+@media (max-width:559px){.bp-job-body{grid-template-columns:1fr}.bp-mobile>span:last-child{font-size:0;max-width:none}.bp-mobile>span:last-child::after{content:"↓";font-size:22px;line-height:1;color:var(--blue,#0077b6)}}
