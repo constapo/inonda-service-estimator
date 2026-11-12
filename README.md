@@ -8,12 +8,12 @@ Always use the supplied official INONDA LTD logo (`dist/inonda-logo.png`). Prese
 
 ## What works
 
-- A budget planner dashboard for potential customers, separate from the photos. Visitors tick job titles; there is no picture-based selection.
+- A budget planner dashboard for potential customers. Visitors tick job titles; there is no picture-based selection.
 - One-off jobs only: flooring & tiling, kitchens, bathrooms, painting, gypsum board & plastering, plumbing, electrical, roofing & waterproofing, doors & carpentry, outdoor works, aluminium, HPL cladding, decorative panels, welding & metalwork (railings, fences, gates, window grilles, steel frames — each type priced in its own unit: linear metre, piece or m²) and renovation.
 - Maintenance, management, cleaning, garden care, contract repairs and urgent repairs are contract-only work and are deliberately not in the planner.
 - Each job has a type of work, a quantity in its own unit, a job complexity and (gypsum) a board type. A skip & site preparation line is added automatically and can be unticked.
 - Prices always include materials, installation and 19% VAT. The page shows only price ranges per job and in total, never unit rates, material prices or internal factors.
-- Below the planner, an information-only "What we do" photo section links to the service pages on inonda.org.
+- Below the planner, a text-only "What we do" list (no pictures) describes each job and links to its service page on inonda.org.
 - Mobile first: the hero button lands on the planner, every control is at least 44 px tall and a sticky bottom bar shows the current total. Book an inspection opens WhatsApp to Irina with the job list, only on the visitor's click. Save as PDF prints the plan.
 
 All prices are planning guides for the owner to adjust in `dist/estimator.mjs`; they are not quotations.

@@ -34,8 +34,6 @@ export const LOCATION_KEYS={'Nicosia':'nicosia','Limassol':'limassol','Larnaca':
 export const SERVICES=JOBS;
 export const variantUnit=(id,variant)=>JOBS[id]?.variants[variant]?.[2]||JOBS[id]?.unit;
 export const variantQty=(id,variant)=>JOBS[id]?.variants[variant]?.[3]??JOBS[id]?.qty;
-// A photo must show the job named beside it (owner rule, 12 November 2026); null shows a drawn icon until one exists.
-export const JOB_IMAGES={welding:null,flooring:null,kitchen:'kitchen',bathroom:'bathroom',painting:'painting',gypsum:null,plumbing:'plumbing',electrical:'electrical',roofing:null,doors:'carpentry',outdoor:'outdoor',aluminium:'aluminium',hpl:'hpl',decor:'decor',renovation:'renovation'};
 export const JOB_PAGES={welding:'outdoor-works/',flooring:'flooring-tiling/',kitchen:'kitchen-renovation/',bathroom:'bathroom-renovation/',painting:'painting-plastering-gypsum/',gypsum:'painting-plastering-gypsum/',plumbing:'plumbing-services/',electrical:'electrical-services/',roofing:'roof-waterproofing-damp/',doors:'doors-windows-carpentry/',outdoor:'outdoor-works/',aluminium:'aluminium-works/',hpl:'hpl-cladding/',decor:'decorative-panels/',renovation:'home-renovation/'};
 export function initialState(){return {type:'residential',place:null,selected:[],skip:{on:true,qty:1},jobs:Object.fromEntries(Object.entries(JOBS).map(([id,j])=>[id,{qty:j.qty,variant:Object.keys(j.variants)[0],cx:'standard',board:'bstd'}]))};}
 const numeric=v=>v!==''&&v!==null&&typeof v!=='boolean'&&Number.isFinite(Number(v));
