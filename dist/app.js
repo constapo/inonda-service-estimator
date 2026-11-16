@@ -62,7 +62,7 @@ function update(){
     const quoteLines=custom.map(item=>lineMarkup(carpentry.label(item.category),`${carpentry.text('quantityShort')}: ${item.qty}`,escape(carpentry.text('requestQuote')))).join('');
     $('#bp-lines').innerHTML=has||hasCustom?pricedLines+quoteLines:`<li class="bp-empty">${escape(c('empty'))}</li>`;
   }
-  $('#print').disabled=!ready;$('#bp-clear').disabled=!has;$('#bp-book').classList.toggle('bp-disabled',!ready);
+  $('#print').disabled=!ready;$('#bp-clear').disabled=!(has||hasCustom);$('#bp-book').classList.toggle('bp-disabled',!ready);
   $('#bp-book').href='https://wa.me/35794091616?text='+encodeURIComponent(planText(r));
   persist();
   return r;
@@ -96,7 +96,7 @@ $('#bp-place').addEventListener('change',event=>{if(choosePlace(event.target.val
 $('#bp-locate').addEventListener('click',()=>{const note=$('#bp-where-note');if(!navigator.geolocation){note.textContent=c('locFail');return;}note.textContent=c('locating');
   navigator.geolocation.getCurrentPosition(pos=>{state.place={lat:Math.round(pos.coords.latitude*1000)/1000,lon:Math.round(pos.coords.longitude*1000)/1000};$('#bp-place').value=placeLabel();update();},()=>{note.textContent=c('locFail');note.classList.add('bp-warn');},{enableHighAccuracy:false,timeout:10000,maximumAge:600000});});
 $('#bp-book').addEventListener('click',event=>{if($('#bp-book').classList.contains('bp-disabled')){event.preventDefault();$('#bp-place').focus();$('.bp-where').scrollIntoView({block:'center',behavior:'smooth'});}});
-$('#bp-clear').addEventListener('click',()=>{state.selected=[];renderStatic();$('#bp-title').scrollIntoView({behavior:'smooth'});});
+$('#bp-clear').addEventListener('click',()=>{state.selected=[];carpentry.clear();renderStatic();$('#bp-title').scrollIntoView({behavior:'smooth'});});
 $('#print').addEventListener('click',()=>{const r=calculate(state);if(r.errors.length||(!r.rows.length&&!carpentry.getItems().length)||!state.place)return;$('#print-summary').innerHTML=`<img src="./inonda-logo.png" alt="INONDA LTD" width="130"><h2>${escape(c('title'))}</h2><pre>${escape(planText(r).split('\n').slice(1).join('\n'))}</pre><p>${escape(c('disclaimer'))}</p><p>Irina: +357 94 091 616 · Constantin: +357 94 091 613 · inonda2026@outlook.com</p>`;window.print();});
 $('#how-button').addEventListener('click',()=>{$('#site-menu').close();$('#how-dialog').showModal();});$('#close-dialog').addEventListener('click',()=>$('#how-dialog').close());$('#how-dialog').addEventListener('click',event=>{if(event.target===$('#how-dialog')){const box=$('#how-dialog').getBoundingClientRect();if(event.clientX<box.left||event.clientX>box.right||event.clientY<box.top||event.clientY>box.bottom)$('#how-dialog').close();}});
 hydrateIcons();initI18n();renderStatic();
