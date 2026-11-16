@@ -36,5 +36,6 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Test visible carpentry forms in six languages
         run: |
+          python3 tools/build_language_pages.py
           python3 -m http.server 8088 --directory dist > /tmp/carpentry-http.log 2>&1 &
           node tests/carpentry.browser.mjs
