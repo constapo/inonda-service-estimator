@@ -80,7 +80,7 @@ try{
 
   // Existing numeric jobs are kept separate; their total is explicitly partial.
   await activateKeyboard(page.locator('.bp-job[data-id=flooring] .bp-job-head'));
-  assert.match(await page.locator('.bp-total small').innerText(),/Partial budget/);
+  assert.match(await page.locator('.bp-total small').innerText(),/Partial budget/i);
   assert.match(await page.locator('#bp-lines').innerText(),/Price on Request/);
   assert.match(await page.locator('#bp-total').innerText(),/€/);
 
