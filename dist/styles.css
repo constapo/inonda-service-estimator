@@ -123,3 +123,37 @@ input[aria-invalid=true]{border-color:#ab352d}
 .bp-btn.bp-disabled{opacity:.5}
 @media (max-width:420px){.bp-where-row{flex-direction:column}.bp-locate{width:100%}}
 .bp-tile{border-top:4px solid #0077B6}
+
+
+/* Carpentry: ten always-visible forms, no fixed prices for bespoke work. */
+.bp-carpentry{margin-top:28px;padding-top:26px;border-top:2px solid var(--bp-line)}
+.bp-carpentry-heading h3{margin:0 0 8px;font-size:clamp(20px,3.5vw,27px);color:var(--bp-navy)}
+.bp-carpentry-heading p{margin:0 0 18px;font-size:14px;line-height:1.6;color:var(--bp-muted)}
+.bp-carpentry-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+.bp-carpentry-card{scroll-margin-block:110px;padding:16px;border:1px solid var(--bp-line);border-radius:14px;background:#fff;min-width:0}
+.bp-carpentry-card h4{margin:0 0 6px;color:var(--bp-navy);font-size:17px;line-height:1.3}
+.bp-carpentry-desc{font-size:13px;color:var(--bp-muted);line-height:1.5;margin:0 0 13px}
+.bp-carpentry-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.bp-carpentry-wide{grid-column:1/-1}
+.bp-carpentry textarea{display:block;min-height:76px;resize:vertical;width:100%;font:inherit;font-size:16px;border:1px solid var(--bp-line);border-radius:12px;padding:12px;color:var(--bp-ink)}
+.bp-carpentry-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+.bp-carpentry-actions .bp-btn{width:auto;flex:1;min-width:150px;margin:0}
+.bp-carpentry-error{color:#a12a2a;font-size:13px;margin:8px 0 0}
+.bp-carpentry-error[hidden]{display:none}
+.bp-carpentry-summary{margin-top:20px;border:1px solid var(--bp-line);border-radius:14px;padding:16px;background:var(--bp-soft)}
+.bp-carpentry-summary h4{margin:0 0 10px;color:var(--bp-navy);font-size:18px}
+.bp-carpentry-summary p{color:var(--bp-muted);font-size:13px}
+.bp-carpentry-summary ol{margin:0;padding-inline-start:20px}
+.bp-carpentry-summary li{padding:12px 0;border-bottom:1px solid var(--bp-line);display:flex;gap:12px;align-items:center;justify-content:space-between}
+.bp-carpentry-summary li:last-child{border-bottom:0}
+.bp-carpentry-summary li>div:first-child{min-width:0;overflow-wrap:anywhere}
+.bp-carpentry-summary strong,.bp-carpentry-summary small,.bp-carpentry-por{display:block}
+.bp-carpentry-summary small{font-size:12px;margin:5px 0;line-height:1.5;color:var(--bp-muted)}
+.bp-carpentry-por{font-size:12px;font-weight:700;color:var(--bp-navy)}
+.bp-carpentry-row-actions{display:flex;flex-wrap:wrap;gap:6px}
+.bp-carpentry-row-actions button{min-height:44px;padding:8px 12px;border-radius:8px;background:white;border:1px solid var(--bp-line);font-weight:700;font-size:13px;color:var(--bp-navy)}
+.bp-carpentry-row-actions button:hover{border-color:var(--bp-ocean)}
+@media(max-width:440px){.bp-carpentry-fields{grid-template-columns:1fr}.bp-carpentry-summary li{flex-direction:column;align-items:stretch}.bp-carpentry-row-actions button{flex:1}}
+
+.bp-carpentry-summary,.bp-carpentry-row-actions button{scroll-margin-block:130px}
+.bp-quote-request{display:block;white-space:normal;max-width:190px;overflow-wrap:anywhere;text-align:end}

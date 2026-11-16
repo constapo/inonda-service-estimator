@@ -1,0 +1,41 @@
+name: Carpentry feature validation
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'dist/carpentry*.mjs'
+      - 'dist/app.js'
+      - 'dist/index.html'
+      - 'dist/styles.css'
+      - 'server.py'
+      - 'host/server.py'
+      - 'tests/carpentry*'
+      - '.github/workflows/carpentry-validation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    name: Unit, host and browser regression
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Preserve duplicate server handlers
+        run: cmp server.py host/server.py
+      - name: Run estimator and carpentry unit tests
+        run: node --test tests/*.test.mjs
+      - name: Run host, search and cross-site unit tests
+        run: python3 -m unittest discover -s tests -p 'test_*.py'
+      - name: Install ephemeral browser test tooling
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Test visible carpentry forms in six languages
+        run: |
+          python3 tools/build_language_pages.py
+          python3 -m http.server 8088 --directory dist > /tmp/carpentry-http.log 2>&1 &
+          node tests/carpentry.browser.mjs

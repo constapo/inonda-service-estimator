@@ -18,6 +18,14 @@ Always use the supplied official INONDA LTD logo (`dist/inonda-logo.png`). Prese
 
 All prices are planning guides for the owner to adjust in `dist/estimator.mjs`; they are not quotations.
 
+## Custom carpentry requests (draft feature)
+
+The independent **Carpentry & Custom Woodwork** section presents all ten work types directly on the page: doors and frames, timber windows and shutters, kitchen/utility cabinetry, wardrobes/storage, shelving/fitted furniture, panelling/trim, stairs/balustrades, outdoor carpentry, repairs/alterations, and other custom work. Each subsection accepts a suitable material, fabrication/replacement/repair type, optional dimensions in centimetres, quantity and notes. Visitors can add, edit and remove multiple items per subsection. These items are locally saved in browser session storage and are included in print and visitor-initiated WhatsApp requests.
+
+Custom carpentry receives **Price on Request — Custom Quotation**; it is never automatically priced from standard door/wardrobe rates and is excluded from the numeric estimator subtotal. When mixed with priced services, the numeric figure is explicitly labelled a partial budget. Existing jobs, VAT-inclusive numeric calculations, internal factors, and public access remain unchanged. No message is sent without the visitor opening the contact link.
+
+The implementation lives in `dist/carpentry.mjs`, `dist/carpentry-ui.mjs`, `dist/app.js`, `dist/index.html`, `dist/styles.css` and two synchronized Python host route allowlists. Unit and browser tests cover the new request workflow.
+
 ## Hosting and remote updates
 
 See [EDITING.md](EDITING.md) for remote editing by the owner, ChatGPT or Claude. Verify the currently configured deployment pipeline when publishing commits to `main`.
