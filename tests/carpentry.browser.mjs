@@ -8,6 +8,7 @@ const errors=[];
 page.on('pageerror',error=>errors.push(error.message));
 const base='http://127.0.0.1:8088/';
 const form=id=>page.locator('[data-carpentry-form="'+id+'"]');
+async function clickCentered(locator){await locator.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));await locator.click();}
 try{
   await page.goto(base+'?lang=en',{waitUntil:'domcontentloaded'});
   await page.waitForSelector('.bp-carpentry-card');
@@ -37,25 +38,25 @@ try{
   await form('doorsFrames').locator('[name=height]').fill('210');
   await form('doorsFrames').locator('[name=qty]').fill('2');
   await form('doorsFrames').locator('[name=notes]').fill('First custom door');
-  await form('doorsFrames').locator('button[type=submit]').click();
+  await clickCentered(form('doorsFrames').locator('button[type=submit]'));
   assert.equal(await page.locator('[data-carpentry-edit]').count(),1);
 
   // A second item in exactly the same subsection must remain independent.
   await form('doorsFrames').locator('[name=material]').selectOption('engineered');
   await form('doorsFrames').locator('[name=qty]').fill('3');
   await form('doorsFrames').locator('[name=notes]').fill('Second custom door');
-  await form('doorsFrames').locator('button[type=submit]').click();
+  await clickCentered(form('doorsFrames').locator('button[type=submit]'));
   assert.equal(await page.locator('[data-carpentry-edit]').count(),2);
   assert.match(await page.locator('.bp-carpentry-summary').innerText(),/First custom door/);
   assert.match(await page.locator('.bp-carpentry-summary').innerText(),/Second custom door/);
 
-  await page.locator('[data-carpentry-edit]').first().click();
+  await clickCentered(page.locator('[data-carpentry-edit]').first());
   await form('doorsFrames').locator('[name=notes]').fill('Edited first door');
   await form('doorsFrames').locator('[name=qty]').fill('5');
-  await form('doorsFrames').locator('button[type=submit]').click();
+  await clickCentered(form('doorsFrames').locator('button[type=submit]'));
   assert.equal(await page.locator('[data-carpentry-edit]').count(),2);
   assert.match(await page.locator('.bp-carpentry-summary').innerText(),/Edited first door/);
-  await page.locator('[data-carpentry-remove]').last().click();
+  await clickCentered(page.locator('[data-carpentry-remove]').last());
   assert.equal(await page.locator('[data-carpentry-edit]').count(),1);
   await page.reload({waitUntil:'domcontentloaded'});
   assert.equal(await page.locator('[data-carpentry-edit]').count(),1,'Saved items must persist after reload');
@@ -72,12 +73,12 @@ try{
   assert.doesNotMatch(message,/20%|commercial uplift|material cost|travel charge/i);
 
   await page.evaluate(()=>{window.__printed=false;window.print=()=>{window.__printed=true;}});
-  await page.locator('#print').click();
+  await clickCentered(page.locator('#print'));
   assert.equal(await page.evaluate(()=>window.__printed),true);
   assert.match(await page.locator('#print-summary').innerText(),/Edited first door/);
 
   // Existing numeric jobs are kept separate; their total is explicitly partial.
-  await page.locator('.bp-job[data-id=flooring] .bp-job-head').click();
+  await clickCentered(page.locator('.bp-job[data-id=flooring] .bp-job-head'));
   assert.match(await page.locator('.bp-total small').innerText(),/Partial budget/);
   assert.match(await page.locator('#bp-lines').innerText(),/Price on Request/);
   assert.match(await page.locator('#bp-total').innerText(),/€/);
@@ -86,7 +87,7 @@ try{
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+3);
   assert.equal(overflow,false,'Carpentry controls overflow the mobile viewport');
   assert.deepEqual(errors,[],'No uncaught client errors');
-  await page.locator('#bp-clear').click();
+  await clickCentered(page.locator('#bp-clear'));
   assert.equal(await page.locator('[data-carpentry-edit]').count(),0,'Clear resets custom items');
   assert.equal(await page.locator('.bp-job.on').count(),0,'Clear resets standard items');
   console.log('Carpentry UI smoke tests passed: all six languages, ten sections, add/edit/remove, persistence, print, WhatsApp, partial budget, mobile.');
