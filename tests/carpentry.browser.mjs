@@ -61,7 +61,7 @@ try{
 
   await page.locator('#bp-place').fill('Limassol');
   await page.locator('#bp-place').blur();
-  assert.equal(await page.locator('#bp-book').getAttribute('aria-disabled'),null);
+  assert.equal(await page.locator('#bp-book').evaluate(el=>el.classList.contains('bp-disabled')),false);
   assert.ok(!(await page.locator('#print').isDisabled()),'Custom-only request should be printable');
   assert.match(await page.locator('#bp-total').innerText(),/Price on Request/);
   const link=await page.locator('#bp-book').getAttribute('href');
@@ -85,6 +85,9 @@ try{
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+3);
   assert.equal(overflow,false,'Carpentry controls overflow the mobile viewport');
   assert.deepEqual(errors,[],'No uncaught client errors');
+  await page.locator('#bp-clear').click();
+  assert.equal(await page.locator('[data-carpentry-edit]').count(),0,'Clear resets custom items');
+  assert.equal(await page.locator('.bp-job.on').count(),0,'Clear resets standard items');
   console.log('Carpentry UI smoke tests passed: all six languages, ten sections, add/edit/remove, persistence, print, WhatsApp, partial budget, mobile.');
 }finally{
   await browser.close();
