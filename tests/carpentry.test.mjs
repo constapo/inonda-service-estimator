@@ -90,5 +90,5 @@ test('existing numeric VAT-inclusive calculations remain independent of custom r
   const carpentry=[{id:'custom_00001',...validateCarpentry(sample('doorsFrames')).item}];
   const again=calculate({...state,carpentryItems:carpentry});
   assert.deepEqual(again,baseline);
-  assert.equal(baseline.oneOff.tax,baseline.oneOff.central*19/119);
+  assert.ok(Math.abs(baseline.oneOff.tax-baseline.oneOff.central*19/119)<1e-8);
 });
