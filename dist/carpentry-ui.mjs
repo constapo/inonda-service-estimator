@@ -38,6 +38,7 @@ export function initCarpentry(root,onChange){
       '</div><p class="bp-carpentry-error" role="alert" hidden></p></form></article>';
   }
   function render(){
+    root.setAttribute('aria-label',t('title'));
     root.innerHTML='<div class="bp-carpentry-heading"><h3>'+escape(t('title'))+'</h3><p>'+escape(t('intro'))+'</p></div>'+
       '<div class="bp-carpentry-grid">'+CARPENTRY_CATEGORIES.map(card).join('')+'</div>'+
       '<p class="bp-note">'+escape(t('measure'))+'</p>'+
@@ -75,7 +76,7 @@ export function initCarpentry(root,onChange){
       items.push({id,...validated.item});
     }
     editing=null;drafts[category]=blankCarpentryDraft();notify();
-    root.querySelector('.bp-carpentry-summary')?.scrollIntoView({block:'nearest',behavior:'auto'});
+    root.querySelector('[data-carpentry-form="'+category+'"] select[name=material]')?.focus({preventScroll:true});
   });
   root.addEventListener('click',event=>{
     const edit=event.target.closest('[data-carpentry-edit]');
