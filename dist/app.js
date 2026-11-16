@@ -53,13 +53,14 @@ function update(){
   const ready=valid&&locationReady&&(hasCustom||pricedReady);
   const total=pricedReady?range(r.oneOff):hasCustom&&locationReady?carpentry.text('requestQuote'):'—';
   $('#bp-total').textContent=total;$('#mobile-total').textContent=ready?total:c('needPlace');$('.bp-mobile').hidden=!(has||hasCustom);
+  $('.bp-total p').textContent=hasCustom&&!has?carpentry.text('measure'):c('incl');
   $('.bp-total').classList.toggle('bp-waiting',(has&&r.needsPlace)||(hasCustom&&!locationReady));
   $('.bp-total small').textContent=hasCustom?(has?carpentry.text('partial'):carpentry.text('requestQuote')):has&&r.needsPlace?c('needPlace'):c('total');
   $('.bp-where').classList.toggle('bp-attention',(has&&r.needsPlace)||(hasCustom&&!locationReady));whereNote(r);
   if(!valid){$('#bp-lines').innerHTML=`<li class="bp-error" role="alert">${escape(r.errors[0])}</li>`;}
   else {
     const pricedLines=r.rows.map(row=>lineMarkup(c(row.id),`${c(row.variant)}${row.board&&row.board!=='bstd'?' · '+c(row.board):''} · ${row.qty} ${unit(row.id)}`,range(row))).join('')+(r.skip?lineMarkup(c('skip'),`${r.skip.qty} ${c('u_skip')}`,range(r.skip)):'');
-    const quoteLines=custom.map(item=>lineMarkup(carpentry.label(item.category),`${carpentry.text('quantityShort')}: ${item.qty}`,escape(carpentry.text('requestQuote')))).join('');
+    const quoteLines=custom.map(item=>lineMarkup(carpentry.label(item.category),`${carpentry.text('quantityShort')}: ${item.qty}`,`<span class="bp-quote-request">${escape(carpentry.text('requestQuote'))}</span>`)).join('');
     $('#bp-lines').innerHTML=has||hasCustom?pricedLines+quoteLines:`<li class="bp-empty">${escape(c('empty'))}</li>`;
   }
   $('#print').disabled=!ready;$('#bp-clear').disabled=!(has||hasCustom);$('#bp-book').classList.toggle('bp-disabled',!ready);
