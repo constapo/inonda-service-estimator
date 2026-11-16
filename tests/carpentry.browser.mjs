@@ -90,7 +90,7 @@ try{
   assert.deepEqual(errors,[],'No uncaught client errors');
   await activateKeyboard(page.locator('#bp-clear'));
   assert.equal(await page.locator('[data-carpentry-edit]').count(),0,'Clear resets custom items');
-  assert.equal(await page.locator('.bp-job.on').count(),0,'Clear resets standard items');
+  assert.equal(await page.locator('.bp-job[data-id].on').count(),0,'Clear resets standard items');
   console.log('Carpentry UI smoke tests passed: all six languages, ten sections, add/edit/remove, persistence, print, WhatsApp, partial budget, mobile.');
 }finally{
   await browser.close();
