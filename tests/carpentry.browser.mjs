@@ -74,12 +74,12 @@ try{
   assert.doesNotMatch(message,/20%|commercial uplift|material cost|travel charge/i);
 
   await page.evaluate(()=>{window.__printed=false;window.print=()=>{window.__printed=true;}});
-  await clickCentered(page.locator('#print'));
+  await activateKeyboard(page.locator('#print'));
   assert.equal(await page.evaluate(()=>window.__printed),true);
   assert.match(await page.locator('#print-summary').innerText(),/Edited first door/);
 
   // Existing numeric jobs are kept separate; their total is explicitly partial.
-  await clickCentered(page.locator('.bp-job[data-id=flooring] .bp-job-head'));
+  await activateKeyboard(page.locator('.bp-job[data-id=flooring] .bp-job-head'));
   assert.match(await page.locator('.bp-total small').innerText(),/Partial budget/);
   assert.match(await page.locator('#bp-lines').innerText(),/Price on Request/);
   assert.match(await page.locator('#bp-total').innerText(),/€/);
@@ -88,7 +88,7 @@ try{
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+3);
   assert.equal(overflow,false,'Carpentry controls overflow the mobile viewport');
   assert.deepEqual(errors,[],'No uncaught client errors');
-  await clickCentered(page.locator('#bp-clear'));
+  await activateKeyboard(page.locator('#bp-clear'));
   assert.equal(await page.locator('[data-carpentry-edit]').count(),0,'Clear resets custom items');
   assert.equal(await page.locator('.bp-job.on').count(),0,'Clear resets standard items');
   console.log('Carpentry UI smoke tests passed: all six languages, ten sections, add/edit/remove, persistence, print, WhatsApp, partial budget, mobile.');
