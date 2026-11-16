@@ -9,6 +9,7 @@ page.on('pageerror',error=>errors.push(error.message));
 const base='http://127.0.0.1:8088/';
 const form=id=>page.locator('[data-carpentry-form="'+id+'"]');
 async function clickCentered(locator){await locator.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));await locator.click();}
+async function activateKeyboard(locator){await locator.focus();await page.keyboard.press('Enter');}
 try{
   await page.goto(base+'?lang=en',{waitUntil:'domcontentloaded'});
   await page.waitForSelector('.bp-carpentry-card');
@@ -50,13 +51,13 @@ try{
   assert.match(await page.locator('.bp-carpentry-summary').innerText(),/First custom door/);
   assert.match(await page.locator('.bp-carpentry-summary').innerText(),/Second custom door/);
 
-  await clickCentered(page.locator('[data-carpentry-edit]').first());
+  await activateKeyboard(page.locator('[data-carpentry-edit]').first());
   await form('doorsFrames').locator('[name=notes]').fill('Edited first door');
   await form('doorsFrames').locator('[name=qty]').fill('5');
   await clickCentered(form('doorsFrames').locator('button[type=submit]'));
   assert.equal(await page.locator('[data-carpentry-edit]').count(),2);
   assert.match(await page.locator('.bp-carpentry-summary').innerText(),/Edited first door/);
-  await clickCentered(page.locator('[data-carpentry-remove]').last());
+  await activateKeyboard(page.locator('[data-carpentry-remove]').last());
   assert.equal(await page.locator('[data-carpentry-edit]').count(),1);
   await page.reload({waitUntil:'domcontentloaded'});
   assert.equal(await page.locator('[data-carpentry-edit]').count(),1,'Saved items must persist after reload');
