@@ -1,8 +1,8 @@
 # INONDA LTD service estimator
 
-Public, password-free property service estimator for Cyprus, hosted on Wasmer at https://www.inonda.homes. The root domain https://inonda.homes is configured to redirect to www.
+Public, password-free property service estimator for Cyprus, available at https://www.inonda.homes. The root domain https://inonda.homes is configured to redirect to www.
 
-The owner explicitly requested public access without passwords. Visitors open the estimator directly. Source code and editing remain protected by the owner's private GitHub and Wasmer accounts. The app has no public editing endpoint.
+The owner explicitly requested public access without passwords. Visitors open the estimator directly. Editing and deployment are restricted to authorized maintainer accounts. The app has no public editing endpoint.
 
 Always use the supplied official INONDA LTD logo (`dist/inonda-logo.png`). Preserve its colours and proportions. Use Ocean Blue #0077B6, Dark Navy #023E8A and white.
 
@@ -20,11 +20,11 @@ All prices are planning guides for the owner to adjust in `dist/estimator.mjs`; 
 
 ## Hosting and remote updates
 
-See [EDITING.md](EDITING.md) for remote editing by the owner, ChatGPT or Claude. Wasmer automatically deploys commits to the connected `main` branch.
+See [EDITING.md](EDITING.md) for remote editing by the owner, ChatGPT or Claude. Verify the currently configured deployment pipeline when publishing commits to `main`.
 
 `server.py` serves only a fixed list of estimator assets. There is no visitor authentication and the old INONDA_PREVIEW_PASSWORD environment setting is ignored. Server source, environment files and editing paths return 404; POST requests return 405. Responses are no-store, CDN caching stays disabled, and HTTPS stays enabled. The owner explicitly authorized live search indexing. There is no noindex header or metadata; robots.txt allows crawling and sitemap.xml lists all six language versions. Search engines decide when to crawl and index.
 
-`Anybuild` configures the Git-based Python deployment. `server.py` and `host/server.py` must stay identical. `wasmer.toml` keeps the package private while the website itself is public. A blank INONDA_ASSETS value falls back to the bundled dist directory.
+`Anybuild` configures the Git-based Python deployment. `server.py` and `host/server.py` must stay identical. The existing runtime package configuration must be retained until deployment compatibility is verified; the website itself remains public. A blank INONDA_ASSETS value falls back to the bundled dist directory.
 
 ## Validation
 
@@ -66,4 +66,4 @@ Company footer social profiles are in tools/social-links.json. Facebook and Inst
 
 ### Current static hosting cache behaviour
 
-Wasmer’s Staticfile runtime currently ignores the legacy settings/config.toml overrides and sends Cache-Control: max-age=86400 for HTML. Refresh the page after a deployment; use a hard refresh if a browser retains an earlier page. Changing that TOML file alone does not change the live headers. The original management-site CSS/JS and shared assets now use versioned URLs to avoid stale layouts. The estimator uses its own no-store Python host.
+Previous static-hosting checks found the legacy settings/config.toml overrides were ignored and Cache-Control: max-age=86400 was returned for HTML. Verify current headers independently. Refresh the page after a deployment; use a hard refresh if a browser retains an earlier page. Changing that TOML file alone does not change the live headers. The original management-site CSS/JS and shared assets now use versioned URLs to avoid stale layouts. The estimator uses its own no-store Python host.
