@@ -13,6 +13,7 @@ try{
   await page.waitForSelector('.bp-carpentry-card');
   await page.evaluate(()=>{sessionStorage.clear()});
   await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForSelector('.bp-carpentry-card',{timeout:12000});
   assert.equal(await page.locator('.bp-carpentry-card').count(),10,'Ten separate cards must be visible');
   assert.equal(await page.locator('.bp-carpentry-card form').count(),10);
   for(const lang of ['en','el','ru','uk','he','ro']){
