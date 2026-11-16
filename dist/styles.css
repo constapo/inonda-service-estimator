@@ -154,3 +154,6 @@ input[aria-invalid=true]{border-color:#ab352d}
 .bp-carpentry-row-actions button{min-height:44px;padding:8px 12px;border-radius:8px;background:white;border:1px solid var(--bp-line);font-weight:700;font-size:13px;color:var(--bp-navy)}
 .bp-carpentry-row-actions button:hover{border-color:var(--bp-ocean)}
 @media(max-width:440px){.bp-carpentry-fields{grid-template-columns:1fr}.bp-carpentry-summary li{flex-direction:column;align-items:stretch}.bp-carpentry-row-actions button{flex:1}}
+
+.bp-carpentry-summary,.bp-carpentry-row-actions button{scroll-margin-block:130px}
+.bp-quote-request{display:block;white-space:normal;max-width:190px;overflow-wrap:anywhere;text-align:end}
