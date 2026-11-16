@@ -67,6 +67,8 @@ ASSETS = {'/indexnow-key.txt': ('indexnow-key.txt', 'text/plain; charset=utf-8')
           '/i18n.mjs': ('i18n.mjs', 'text/javascript; charset=utf-8'),
           '/assistant.mjs': ('assistant.mjs', 'text/javascript; charset=utf-8'),
           '/estimator.mjs': ('estimator.mjs', 'text/javascript; charset=utf-8'),
+          '/carpentry.mjs': ('carpentry.mjs', 'text/javascript; charset=utf-8'),
+          '/carpentry-ui.mjs': ('carpentry-ui.mjs', 'text/javascript; charset=utf-8'),
           '/presentation.el.vtt': ('presentation.el.vtt', 'text/vtt; charset=utf-8'),
           '/presentation.en.vtt': ('presentation.en.vtt', 'text/vtt; charset=utf-8'),
           '/presentation.ru.vtt': ('presentation.ru.vtt', 'text/vtt; charset=utf-8'),
