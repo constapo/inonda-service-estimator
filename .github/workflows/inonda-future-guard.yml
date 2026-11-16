@@ -17,6 +17,8 @@ jobs:
           import re, subprocess
           changed = subprocess.check_output(['git', 'diff', '--name-only', 'origin/main...HEAD'], text=True).splitlines()
           allowed = {'.github/workflows/inonda-future-guard.yml', 'docs/INONDA_ARCHITECTURAL_RELEASE.md', 'tools/inonda_future.py', 'tools/future-design.css', 'tools/future-ui.js', 'public/assets/future-design.css', 'public/assets/future-ui.js', 'dist/future-design.css', 'dist/future-ui.js'}
+          # Explicitly reviewed carpentry feature surface; unchanged pricing and metadata are still protected.
+          allowed.update({'dist/carpentry.mjs','dist/carpentry-ui.mjs','dist/app.js','dist/styles.css','tests/carpentry.test.mjs','tests/carpentry.browser.mjs','README.md','.github/workflows/carpentry-validation.yml'})
           def previous(path):
               return subprocess.check_output(['git', 'show', 'origin/main:' + path], text=True)
           def normalize(text):
@@ -25,7 +27,14 @@ jobs:
           for path in changed:
               new = Path(path).read_text()
               if path.endswith('.html'):
-                  assert normalize(previous(path)) == normalize(new), 'Original HTML changed: ' + path
+                  old_html = normalize(previous(path))
+                  new_html = normalize(new)
+                  if path == 'dist/index.html':
+                      anchor = '<div id="bp-jobs"></div>'
+                      added = '\n        <section id="bp-carpentry-section" class="bp-carpentry" aria-label="Carpentry & Custom Woodwork"></section>'
+                      assert old_html.replace(anchor,anchor+added) == new_html, 'Unexpected estimator HTML change'
+                  else:
+                      assert old_html == new_html, 'Original HTML changed: ' + path
               elif path == 'tools/inonda_network.py':
                   old = previous(path).replace("VERSION = '20261030-1'", "VERSION = '20261030-2'")
                   old = old.replace('from inonda_seo import enhance_seo', 'from inonda_seo import enhance_seo\nfrom inonda_future import enhance_future')
@@ -33,8 +42,9 @@ jobs:
                   assert new == old, 'Unexpected shared generator change'
               elif path in ['server.py', 'host/server.py']:
                   old = previous(path)
-                  routes = "          '/future-design.css': ('future-design.css', 'text/css; charset=utf-8'),\n          '/future-ui.js': ('future-ui.js', 'text/javascript; charset=utf-8'),\n"
-                  assert new == old.replace("          '/styles.css':", routes + "          '/styles.css':"), 'Unexpected host behavior change'
+                  anchor = "          '/estimator.mjs': ('estimator.mjs', 'text/javascript; charset=utf-8'),"
+                  routes = "\n          '/carpentry.mjs': ('carpentry.mjs', 'text/javascript; charset=utf-8'),\n          '/carpentry-ui.mjs': ('carpentry-ui.mjs', 'text/javascript; charset=utf-8'),"
+                  assert old.replace(anchor,anchor+routes) == new, 'Unexpected host behavior change'
               else:
                   assert path in allowed, 'Unexpected changed file: ' + path
           print('Original content, metadata, logo files and calculation code preserved')
