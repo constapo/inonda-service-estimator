@@ -97,6 +97,7 @@ export function initCarpentry(root,onChange){
   });
   return {
     getItems:()=>items.slice(),
+    clear:()=>{items=[];editing=null;for(const category of CARPENTRY_CATEGORIES)drafts[category.id]=blankCarpentryDraft();save(items);render();},
     render,
     label:id=>carpentryLabel(lang(),id),
     text:t,
