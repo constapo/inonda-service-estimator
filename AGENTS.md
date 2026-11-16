@@ -12,10 +12,10 @@
 - All public monetary inputs and prices must include 19% VAT. Preserve the gross-price model and separate included VAT breakdown; never add VAT a second time. Migrate legacy VAT-exclusive saved scenarios only once.
 - Use photos and videos only from the owner's inonda.site and inonda.org websites; keep the original supplied company logo. Reference scullion.ie for image-led composition, not its assets or brand.
 - Keep the frontend responsive and accessible. All service quantities, rates, minimums and assumptions must remain configurable. Do not add fabricated reviews, recommendations or customer claims.
-- Read `EDITING.md` before deployment. Wasmer automatically deploys commits to `main`. A user asking for a direct live update authorizes that deployment while preserving public visitor access and private editing; a request for a draft or pull request does not authorize merging it.
+- Read `EDITING.md` before deployment. Verify the current deployment integration for commits to `main`. A user asking for a direct live update authorizes that deployment while preserving public visitor access and private editing; a request for a draft or pull request does not authorize merging it.
 - Before modifying existing source, inspect the current remote branch and preserve concurrent edits. Use a lease when moving the branch.
 - Run relevant meaningful checks for changed behaviour. Calculation tests: `node --test tests/estimator.test.mjs`. Host tests: `python -m unittest discover -s tests -p 'test_*.py'`. Inspect the deployed UI when access is available, and report any verification blocker accurately.
-- Default website: `https://www.inonda.homes`. Root `https://inonda.homes` is configured in Wasmer to redirect to www. Repository: `constapo/inonda-service-estimator`.
+- Default website: `https://www.inonda.homes`. Root `https://inonda.homes` is intended to redirect to www; verify current routing. Repository: `constapo/inonda-service-estimator`.
 
 - Contact links: Irina +357 94 091 616 and Constantin +357 94 091 613, each with WhatsApp, Viber and telephone. Email inonda2026@outlook.com. Use published INONDA source data; do not send messages during validation.
 - The on-page assistant is a local automated service guide, not a human or a generative AI service. It may explain scope and current estimates and direct visitors to the team. It must not promise bookings or confirmed quotes.
