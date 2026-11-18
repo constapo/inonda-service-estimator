@@ -26,7 +26,6 @@ export const BOARDS={bstd:0,bmr:8,bfire:12};      // € per m² extra, gypsum o
 export const COMPLEXITY={standard:1,cuts:1.2,complex:1.4};
 export const COMMERCIAL_UPLIFT=0.20;
 export const SKIP={each:250,prep:.05,prepMin:100}; // skip hire + site preparation & final clean-up
-export const SPREAD=.15;
 export const MAX_QTY=5000,MAX_SKIPS=20;
 export const LOCATIONS=['Nicosia','Limassol','Larnaca','Paphos','Famagusta district','Other location in Cyprus'];
 export const LOCATION_KEYS={'Nicosia':'nicosia','Limassol':'limassol','Larnaca':'larnaca','Paphos':'paphos','Famagusta district':'famagusta','Other location in Cyprus':'other'};
@@ -36,11 +35,15 @@ export const variantUnit=(id,variant)=>JOBS[id]?.variants[variant]?.[2]||JOBS[id
 export const variantQty=(id,variant)=>JOBS[id]?.variants[variant]?.[3]??JOBS[id]?.qty;
 export const JOB_PAGES={welding:'outdoor-works/',flooring:'flooring-tiling/',kitchen:'kitchen-renovation/',bathroom:'bathroom-renovation/',painting:'painting-plastering-gypsum/',gypsum:'painting-plastering-gypsum/',plumbing:'plumbing-services/',electrical:'electrical-services/',roofing:'roof-waterproofing-damp/',doors:'doors-windows-carpentry/',outdoor:'outdoor-works/',aluminium:'aluminium-works/',hpl:'hpl-cladding/',decor:'decorative-panels/',renovation:'home-renovation/'};
 export function initialState(){return {type:'residential',place:null,selected:[],skip:{on:true,qty:1},jobs:Object.fromEntries(Object.entries(JOBS).map(([id,j])=>[id,{qty:j.qty,variant:Object.keys(j.variants)[0],cx:'standard',board:'bstd'}]))};}
-const numeric=v=>v!==''&&v!==null&&typeof v!=='boolean'&&Number.isFinite(Number(v));
-const band=central=>central===0?{low:0,high:0,central:0}:{central,low:Math.floor(central*(1-SPREAD)/5)*5,high:Math.ceil(central*(1+SPREAD)/5)*5};
+const numeric=v=>v!==''&&v!==null&&typeof v!=='boolean'&&(typeof v==='number'||/^\s*\d+(\.\d+)?\s*$/.test(String(v)))&&Number.isFinite(Number(v));
+// Units counted in whole items: no fractions (1.5 doors) are accepted.
+export const WHOLE_UNITS=new Set(['point','piece','room','set','zone','job']);
+// One price per line, rounded to €5; the total is the sum of the lines shown.
+const round5=v=>Math.round(v/5)*5;
+const band=central=>{const price=round5(central);return {central,price,low:price,high:price};};
 export function calculate(state){
   const errors=[],rows=[];
-  if(!state||typeof state!=='object')return {errors:['Invalid plan.'],rows,skip:null,oneOff:band(0),monthly:band(0)};
+  if(!state||typeof state!=='object')return {errors:['Invalid plan.'],rows,skip:null,oneOff:band(0)};
   if(!['residential','commercial'].includes(state.type))errors.push('Choose a property type.');
   const ids=Array.isArray(state.selected)?state.selected:[];
   if(new Set(ids).size!==ids.length||ids.some(id=>!JOBS[id]))errors.push('Invalid job selection.');
@@ -51,6 +54,7 @@ export function calculate(state){
     if(!j){errors.push('Missing job settings.');continue;}
     const v=def.variants[j.variant];if(!v){errors.push('Choose a type of work.');continue;}
     if(!numeric(j.qty)||Number(j.qty)<1||Number(j.qty)>MAX_QTY){errors.push(`Quantity must be between 1 and ${MAX_QTY}.`);continue;}
+    if(WHOLE_UNITS.has(v[2]||def.unit)&&!Number.isInteger(Number(j.qty))){errors.push('Enter a whole number for this item.');continue;}
     if(!COMPLEXITY[j.cx]){errors.push('Choose a job complexity.');continue;}
     const usesBoard=Boolean(def.boards)&&j.variant!=='plaster',board=usesBoard?(BOARDS[j.board]??null):0;
     if(board===null){errors.push('Choose a board type.');continue;}
@@ -71,15 +75,16 @@ export function calculate(state){
   if(where){const km=distanceKm(where.lat,where.lon);if(km>TRAVEL.maxKm)errors.push('This location is outside our service area.');else travel={km:Math.round(km),amount:travelCharge(km),low:travelCharge(km),high:travelCharge(km),central:travelCharge(km)};}
   // Owner rule (12 November 2026): travel stays in the price but is never shown to visitors.
   // It is folded into the skip & site preparation line (or the first job line) so the lines add up to the total.
-  if(travel&&travel.amount&&rows.length){const host=skip||rows[0];host.low+=travel.amount;host.high+=travel.amount;host.central+=travel.amount;}
+  if(travel&&travel.amount&&rows.length){const host=skip||rows[0];host.central+=travel.amount;host.price=round5(host.central);host.low=host.high=host.price;}
   const parts=[...rows,...(skip?[skip]:[])],central=parts.reduce((s,r)=>s+r.central,0);
-  const oneOff={low:parts.reduce((s,r)=>s+r.low,0),high:parts.reduce((s,r)=>s+r.high,0),central,net:central/(1+VAT_RATE/100),tax:central-central/(1+VAT_RATE/100)};
-  return {errors,rows,skip,travel,needsPlace:rows.length>0&&!travel,oneOff,monthly:band(0)};
+  const price=parts.reduce((s,r)=>s+r.price,0);
+  const oneOff={price,low:price,high:price,central,net:central/(1+VAT_RATE/100),tax:central-central/(1+VAT_RATE/100)};
+  return {errors,rows,skip,travel,needsPlace:rows.length>0&&!travel,oneOff};
 }
 const clean=s=>s.replace(/[\u200e\u200f\u061c]/g,'');
 export const money=value=>clean(new Intl.NumberFormat(getLocale(),{style:'currency',currency:'EUR',currencyDisplay:'narrowSymbol',maximumFractionDigits:0}).format(value));
 // Isolate the range so right-to-left pages keep low → high order.
-export const range=total=>`\u2066${money(total.low)} – ${money(total.high)}\u2069`;
+export const range=total=>`\u2066${money(total.price??total.central)}\u2069`; // single price (name kept for existing callers)
 export const COPY={
 en:{brand:'Budget planner',title:'Plan the budget for your job',lead:'Tick the work you need, add the size and see a budget range straight away. Materials and installation are included in every price.',property:'Your property',ptype:'Property type',residential:'Residential',commercial:'Commercial',location:'Location',jobs:'Choose your jobs',size:'Size (m²)',type:'Type of work',complexity:'Job complexity',standard:'Standard',cuts:'Many cuts & details',complex:'Complex / hard access',budget:'Your budget',total:'Estimated budget',incl:'Materials, installation and 19% VAT included',empty:'Tick a job to see your budget.',book:'Book an inspection',pdf:'Save as PDF',clear:'Clear',disclaimer:'This is a planning guide, not a quotation. INONDA LTD gives a written offer after inspecting the property.',msg:'Hello INONDA, I would like an inspection for:',
  aluminium:'Aluminium works',hpl:'HPL cladding',decor:'Decorative panels',renovation:'Renovation',

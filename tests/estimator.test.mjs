@@ -10,9 +10,9 @@ test('only one-off jobs are offered; contract work is excluded',()=>{
   const r=calculate(plan(['cleaning']));assert.notDeepEqual(r.errors,[]);
 });
 test('empty plan has no total and no skip',()=>{const r=calculate(initialState());assert.deepEqual(r.errors,[]);assert.equal(r.rows.length,0);assert.equal(r.skip,null);assert.equal(r.oneOff.central,0);});
-test('per-unit price, minimum job price and ±15% range rounded to €5',()=>{
+test('per-unit price, minimum job price and one price per line rounded to €5',()=>{
   const r=calculate(plan(['gypsum'],s=>{s.skip.on=false;s.jobs.gypsum.variant='ceiling';s.jobs.gypsum.qty=25;}));
-  close(r.rows[0].central,950);assert.equal(r.rows[0].low,805);assert.equal(r.rows[0].high,1095);
+  close(r.rows[0].central,950);assert.equal(r.rows[0].price,950);
   const small=calculate(plan(['gypsum'],s=>{s.skip.on=false;s.jobs.gypsum.variant='lining';s.jobs.gypsum.qty=5;}));
   close(small.rows[0].central,400);
 });
@@ -35,7 +35,7 @@ test('skip & site preparation is added only when a job is selected',()=>{
   const r=calculate(plan(['flooring'],s=>{s.jobs.flooring.qty=30;s.skip.qty=2;}));
   close(r.skip.central,2*250+Math.max(100,1350*.05));
   close(r.oneOff.central,1350+r.skip.central);
-  assert.equal(r.oneOff.low,r.rows[0].low+r.skip.low);
+  assert.equal(r.oneOff.price,r.rows[0].price+r.skip.price);
   const off=calculate(plan(['flooring'],s=>{s.skip.on=false;}));assert.equal(off.skip,null);
   assert.notDeepEqual(calculate(plan(['flooring'],s=>{s.skip.qty=0;})).errors,[]);
 });
@@ -54,7 +54,7 @@ test('every job, type, unit and description is translated in all six languages',
 test('customer-facing text never reveals internal factors or unit rates',()=>{
   const text=JSON.stringify([COPY,DESC]);
   assert.doesNotMatch(text,/20%|40%|60%|uplift|margin|per m²|€\s?\d/);
-  assert.match(range({low:100,high:200}),/^⁦.*⁩$/);
+  assert.match(range({price:150}),/^⁦[^–]*150[^–]*⁩$/);
 });
 test('the total waits for the job location',()=>{
   const s=plan(['flooring']);let r=calculate(s);
@@ -104,4 +104,16 @@ test('welding: each type has its own unit, default quantity and minimum, and tra
   s.jobs.welding.variant='gateswing';s.jobs.welding.qty=1;const one=calculate(s).rows[0].central;
   s.jobs.welding.variant='railing';s.jobs.welding.qty=1;assert.ok(calculate(s).rows[0].central<one,'short railing falls back to its minimum');
   for(const lang of ['el','en','ru','uk','he','ro'])assert.notEqual(COPY[lang].steelfence,COPY[lang].fence,'outdoor fencing label stays separate');
+});
+
+test('whole-unit jobs reject fractions and odd number formats',()=>{
+  assert.deepEqual(calculate(plan(['doors'],s=>{s.jobs.doors.qty=1.5;})).errors,['Enter a whole number for this item.']);
+  assert.deepEqual(calculate(plan(['doors'],s=>{s.jobs.doors.qty=2;})).errors,[]);
+  assert.notDeepEqual(calculate(plan(['flooring'],s=>{s.jobs.flooring.qty='1e3';})).errors,[]);
+  assert.deepEqual(calculate(plan(['flooring'],s=>{s.jobs.flooring.qty='2.5';})).errors,[]);
+});
+test('the total equals the sum of the single prices shown',()=>{
+  const r=calculate(plan(['flooring','painting','doors']));
+  assert.equal(r.oneOff.price,r.rows.reduce((t,x)=>t+x.price,0)+(r.skip?r.skip.price:0));
+  for(const x of [...r.rows,r.skip])assert.equal(x.price%5,0);
 });

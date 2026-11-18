@@ -110,6 +110,6 @@ function showTeaser(){if(greeted()||panel.open||started||!teaser.hidden)return;f
 function hideTeaser(){teaser.classList.remove('inonda-chat-teaser-in');teaser.hidden=true;}
 teaserOpen.addEventListener('click',()=>openPanel());teaserLater.addEventListener('click',()=>{hideTeaser();remember();toggle.focus();});
 teaser.addEventListener('keydown',event=>{if(event.key==='Escape'){hideTeaser();toggle.focus();}});
-if(!greeted()){const timer=setTimeout(showTeaser,7000);const onScroll=()=>{const max=document.documentElement.scrollHeight-innerHeight;if(max>0&&scrollY/max>.35){removeEventListener('scroll',onScroll);clearTimeout(timer);showTeaser();}};addEventListener('scroll',onScroll,{passive:true});}
+if(!greeted()&&!(isHome&&matchMedia('(max-width: 760px)').matches)){const timer=setTimeout(showTeaser,7000);const onScroll=()=>{const max=document.documentElement.scrollHeight-innerHeight;if(max>0&&scrollY/max>.35){removeEventListener('scroll',onScroll);clearTimeout(timer);showTeaser();}};addEventListener('scroll',onScroll,{passive:true});}
 close.addEventListener('click',()=>panel.close());panel.addEventListener('close',()=>{toggle.setAttribute('aria-expanded','false');toggle.focus();});panel.addEventListener('keydown',event=>{if(event.key==='Escape')panel.close();});form.addEventListener('submit',event=>{event.preventDefault();ask(input.value);});document.addEventListener('inonda:language',update);update();
 })();

@@ -50,7 +50,7 @@ Saved estimate scenarios stay in each visitor's browser and do not change defaul
 
 ## Checks and rollback
 
-For calculation changes, run `node --test tests/estimator.test.mjs`. For host changes, run `python -m unittest discover -s tests -p 'test_*.py'`. Check desktop and mobile controls, one-off/monthly totals, input validation and anonymous visitor access as appropriate.
+For calculation changes, run `node --test tests/estimator.test.mjs`. For host changes, run `python -m unittest discover -s tests -p 'test_*.py'`. Check desktop and mobile controls, job prices and totals, input validation and anonymous visitor access as appropriate.
 
 If a live update breaks the site, redeploy a previous working version from the active hosting deployment history or revert the offending Git commit. Keep the repository private and preserve public read-only visitor access during repairs.
 
