@@ -9,7 +9,7 @@ function icon(name){return `<svg class="icon" viewBox="0 0 24 24" aria-hidden="t
 function hydrateIcons(root=document){root.querySelectorAll('i[data-icon]').forEach(el=>el.outerHTML=icon(el.dataset.icon));}
 const STORE='inonda-budget-v2';
 const c=key=>copyText(getLanguage(),key);
-function restore(){try{const raw=JSON.parse(sessionStorage.getItem(STORE)||'null');if(!raw||typeof raw!=='object')return null;const base=initialState();const merged={...base,...raw,skip:{...base.skip,...(raw.skip||{})},jobs:{...base.jobs}};for(const id of Object.keys(JOBS))merged.jobs[id]={...base.jobs[id],...(raw.jobs?.[id]||{})};merged.selected=Array.isArray(raw.selected)?raw.selected.filter(id=>JOBS[id]):[];return calculate(merged).errors.length?null:merged;}catch{return null;}}
+function restore(){try{const raw=JSON.parse(sessionStorage.getItem(STORE)||'null');if(!raw||typeof raw!=='object')return null;const base=initialState();const merged={...base,...raw,skip:{...base.skip},jobs:{...base.jobs}};for(const id of Object.keys(JOBS))merged.jobs[id]={...base.jobs[id],...(raw.jobs?.[id]||{})};merged.selected=Array.isArray(raw.selected)?raw.selected.filter(id=>JOBS[id]):[];return calculate(merged).errors.length?null:merged;}catch{return null;}}
 function persist(){try{sessionStorage.setItem(STORE,JSON.stringify(state));}catch{}}
 const entry=incomingJourney(restore()||initialState(),location.search);
 let state=entry.state,toastTimer;
@@ -36,7 +36,7 @@ function renderStatic(){
   const lang=getLanguage(),other=lang==='el'?'en':'el';
   $('#bp-places').innerHTML=PLACES.map(p=>`<option value="${escape(lang==='el'?p.el:p.en)}">${escape(other==='el'?p.el:p.en)}</option>`).join('');
   const input=$('#bp-place');input.placeholder=c('placeHint');if(document.activeElement!==input)input.value=placeLabel();
-  $('#bp-jobs').innerHTML=Object.keys(JOBS).map(jobMarkup).join('')+skipMarkup();
+  $('#bp-jobs').innerHTML=Object.keys(JOBS).map(jobMarkup).join('');
   carpentry.render();
   $('#bp-grid').innerHTML=Object.keys(JOBS).map(id=>`<article class="bp-tile"><div><h3>${escape(c(id))}</h3><p>${escape(DESC[lang]?.[id]||DESC.en[id])}</p><a href="https://www.inonda.org/${lang}/${JOB_PAGES[id]}" target="_blank" rel="noopener">${escape(c('more'))} <span aria-hidden="true">↗</span></a></div></article>`).join('');
   update();
@@ -48,7 +48,7 @@ function update(){
   const r=calculate(state),valid=!r.errors.length,has=r.rows.length>0;
   const custom=carpentry.getItems(),hasCustom=custom.length>0,locationReady=Boolean(state.place)&&valid;
   document.querySelectorAll('[data-price]').forEach(el=>{const row=r.rows.find(x=>x.id===el.dataset.price);el.textContent=row&&valid?range(row):'';});
-  $('#bp-skip-price').textContent=r.skip&&valid?range(r.skip):'';
+  {const sp=$('#bp-skip-price');if(sp)sp.textContent=r.skip&&valid?range(r.skip):'';}
   const pricedReady=has&&valid&&!r.needsPlace;
   const ready=valid&&locationReady&&(hasCustom||pricedReady);
   const total=pricedReady?range(r.oneOff):hasCustom&&locationReady?carpentry.text('requestQuote'):'—';
