@@ -2,14 +2,14 @@ import {initI18n,t,getLanguage,getLocale} from './i18n.mjs';
 import {incomingJourney} from './journey.mjs';
 import {guideAnswer} from './assistant.mjs';
 import {initCarpentry} from './carpentry-ui.mjs';
-import {JOBS,variantUnit,variantQty,BOARDS,COMPLEXITY,PLACES,PLACE_BY_ID,findPlace,placeName,JOB_PAGES,DESC,MAX_QTY,MAX_SKIPS,initialState,calculate,money,range,copyText} from './estimator.mjs';
+import {JOBS,variantUnit,variantQty,BOARDS,COMPLEXITY,PLACES,PLACE_BY_ID,findPlace,placeName,JOB_PAGES,DESC,MAX_QTY,WHOLE_UNITS,MAX_SKIPS,initialState,calculate,money,range,copyText} from './estimator.mjs';
 const $=s=>document.querySelector(s),escape=value=>String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const paths={home:'m3 10 9-7 9 7M5 9v12h14V9M9 21v-8h6v8',building:'M4 21V4h11v17M15 9h5v12M8 8h3M8 12h3M8 16h3M2 21h20',calculator:'M6 3h12v18H6zM9 6h6M9 10h.01M15 10h.01M9 14h.01M15 14h.01M9 18h.01M15 18h.01',bookmark:'M6 3h12v18l-6-4-6 4z',help:'M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4M12 17h.01M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',pin:'M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 0 1 14 0ZM15 10a3 3 0 1 1-6 0 3 3 0 0 1 6 0',check:'m5 12 4 4L19 6',info:'M12 11v6M12 7h.01M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',tools:'m3 21 6-6M14 4l6 6M13 5l4-3 5 5-3 4M12 12l8 8-2 2-8-8M3 3l4 1 2 4-2 2-4-3z',wrench:'M14 4a6 6 0 0 0-7 8L2 17l5 5 5-5a6 6 0 0 0 8-7l-4 4-4-4z',paint:'M4 3h14v7H4zM18 6h3v7h-9v4M10 17h4v5h-4z',sparkles:'m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5zM21 2v4M19 4h4',leaf:'M20 3C8 2 2 7 5 15c3 8 16 7 15-12ZM4 21l12-13',clipboard:'M8 4H5v18h14V4h-3M8 2h8v5H8zM8 12h8M8 16h6',sliders:'M4 7h16M4 17h16M8 4v6M16 14v6',chevron:'m6 9 6 6 6-6',plus:'M12 5v14M5 12h14',download:'M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5',printer:'M6 8V2h12v6M6 18H3V8h18v10h-3M6 14h12v8H6zM17 11h.01',shield:'m12 2 8 3v6c0 5-8 11-8 11S4 16 4 11V5zM8 11l3 3 5-6',close:'m6 6 12 12M6 18 18 6',trash:'M3 6h18M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7'};
 function icon(name){return `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[name]||paths.info}"></path></svg>`;}
 function hydrateIcons(root=document){root.querySelectorAll('i[data-icon]').forEach(el=>el.outerHTML=icon(el.dataset.icon));}
 const STORE='inonda-budget-v2';
 const c=key=>copyText(getLanguage(),key);
-function restore(){try{const raw=JSON.parse(sessionStorage.getItem(STORE)||'null');if(!raw||typeof raw!=='object')return null;const base=initialState();const merged={...base,...raw,skip:{...base.skip,...(raw.skip||{})},jobs:{...base.jobs}};for(const id of Object.keys(JOBS))merged.jobs[id]={...base.jobs[id],...(raw.jobs?.[id]||{})};merged.selected=Array.isArray(raw.selected)?raw.selected.filter(id=>JOBS[id]):[];return calculate(merged).errors.length?null:merged;}catch{return null;}}
+function restore(){try{const raw=JSON.parse(sessionStorage.getItem(STORE)||'null');if(!raw||typeof raw!=='object')return null;const base=initialState();const merged={...base,...raw,skip:{...base.skip},jobs:{...base.jobs}};for(const id of Object.keys(JOBS))merged.jobs[id]={...base.jobs[id],...(raw.jobs?.[id]||{})};merged.selected=Array.isArray(raw.selected)?raw.selected.filter(id=>JOBS[id]):[];return calculate(merged).errors.length?null:merged;}catch{return null;}}
 function persist(){try{sessionStorage.setItem(STORE,JSON.stringify(state));}catch{}}
 const entry=incomingJourney(restore()||initialState(),location.search);
 let state=entry.state,toastTimer;
@@ -24,7 +24,7 @@ function jobMarkup(id){
     <button type="button" class="bp-job-head" aria-expanded="${on}" aria-controls="${body}"><span class="bp-tick" aria-hidden="true">${on?icon('check'):''}</span><span class="bp-job-title">${escape(c(id))}</span><span class="bp-job-price" data-price="${id}"></span></button>
     <div class="bp-job-body" id="${body}" ${on?'':'hidden'}>
       <label class="bp-field bp-wide"><span>${escape(c('type'))}</span><select data-k="variant">${options(Object.keys(JOBS[id].variants),j.variant)}</select></label>
-      <label class="bp-field"><span>${escape(c('qtyl'))} (${escape(unit(id))})</span><input data-k="qty" type="number" inputmode="decimal" min="1" max="${MAX_QTY}" step="any" value="${escape(j.qty)}"></label>
+      <label class="bp-field"><span>${escape(c('qtyl'))} (${escape(unit(id))})</span><input data-k="qty" type="number" inputmode="decimal" min="1" max="${MAX_QTY}" step="${WHOLE_UNITS.has(variantUnit(id,j.variant))?1:'any'}" value="${escape(j.qty)}"></label>
       ${usesBoard(id)?`<label class="bp-field"><span>${escape(c('boardl'))}</span><select data-k="board">${options(Object.keys(BOARDS),j.board)}</select></label>`:''}
       <label class="bp-field"><span>${escape(c('complexity'))}</span><select data-k="cx">${options(Object.keys(COMPLEXITY),j.cx)}</select></label>
     </div></div>`;
@@ -36,7 +36,7 @@ function renderStatic(){
   const lang=getLanguage(),other=lang==='el'?'en':'el';
   $('#bp-places').innerHTML=PLACES.map(p=>`<option value="${escape(lang==='el'?p.el:p.en)}">${escape(other==='el'?p.el:p.en)}</option>`).join('');
   const input=$('#bp-place');input.placeholder=c('placeHint');if(document.activeElement!==input)input.value=placeLabel();
-  $('#bp-jobs').innerHTML=Object.keys(JOBS).map(jobMarkup).join('')+skipMarkup();
+  $('#bp-jobs').innerHTML=Object.keys(JOBS).map(jobMarkup).join('');
   carpentry.render();
   $('#bp-grid').innerHTML=Object.keys(JOBS).map(id=>`<article class="bp-tile"><div><h3>${escape(c(id))}</h3><p>${escape(DESC[lang]?.[id]||DESC.en[id])}</p><a href="https://www.inonda.org/${lang}/${JOB_PAGES[id]}" target="_blank" rel="noopener">${escape(c('more'))} <span aria-hidden="true">↗</span></a></div></article>`).join('');
   update();
@@ -48,7 +48,7 @@ function update(){
   const r=calculate(state),valid=!r.errors.length,has=r.rows.length>0;
   const custom=carpentry.getItems(),hasCustom=custom.length>0,locationReady=Boolean(state.place)&&valid;
   document.querySelectorAll('[data-price]').forEach(el=>{const row=r.rows.find(x=>x.id===el.dataset.price);el.textContent=row&&valid?range(row):'';});
-  $('#bp-skip-price').textContent=r.skip&&valid?range(r.skip):'';
+  {const sp=$('#bp-skip-price');if(sp)sp.textContent=r.skip&&valid?range(r.skip):'';}
   const pricedReady=has&&valid&&!r.needsPlace;
   const ready=valid&&locationReady&&(hasCustom||pricedReady);
   const total=pricedReady?range(r.oneOff):hasCustom&&locationReady?carpentry.text('requestQuote'):'—';
@@ -57,7 +57,7 @@ function update(){
   $('.bp-total').classList.toggle('bp-waiting',(has&&r.needsPlace)||(hasCustom&&!locationReady));
   $('.bp-total small').textContent=hasCustom?(has?carpentry.text('partial'):carpentry.text('requestQuote')):has&&r.needsPlace?c('needPlace'):c('total');
   $('.bp-where').classList.toggle('bp-attention',(has&&r.needsPlace)||(hasCustom&&!locationReady));whereNote(r);
-  if(!valid){$('#bp-lines').innerHTML=`<li class="bp-error" role="alert">${escape(r.errors[0])}</li>`;}
+  if(!valid){$('#bp-lines').innerHTML=`<li class="bp-error" role="alert">${escape(t(r.errors[0]))}</li>`;}
   else {
     const pricedLines=r.rows.map(row=>lineMarkup(c(row.id),`${c(row.variant)}${row.board&&row.board!=='bstd'?' · '+c(row.board):''} · ${row.qty} ${unit(row.id)}`,range(row))).join('')+(r.skip?lineMarkup(c('skip'),`${r.skip.qty} ${c('u_skip')}`,range(r.skip)):'');
     const quoteLines=custom.map(item=>lineMarkup(carpentry.label(item.category),`${carpentry.text('quantityShort')}: ${item.qty}`,`<span class="bp-quote-request">${escape(carpentry.text('requestQuote'))}</span>`)).join('');
