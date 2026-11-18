@@ -19,6 +19,14 @@ jobs:
           allowed = {'.github/workflows/inonda-future-guard.yml', 'docs/INONDA_ARCHITECTURAL_RELEASE.md', 'tools/inonda_future.py', 'tools/future-design.css', 'tools/future-ui.js', 'public/assets/future-design.css', 'public/assets/future-ui.js', 'dist/future-design.css', 'dist/future-ui.js'}
           # Explicitly reviewed carpentry feature surface; unchanged pricing and metadata are still protected.
           allowed.update({'dist/carpentry.mjs','dist/carpentry-ui.mjs','dist/app.js','dist/styles.css','tests/carpentry.test.mjs','tests/carpentry.browser.mjs','README.md','.github/workflows/carpentry-validation.yml'})
+          # Owner-approved price update (November 2026, PR #6): reviewed estimator prices, labels, messages and wording.
+          allowed.update({'AGENTS.md','EDITING.md','dist/estimator.mjs','dist/i18n.mjs','dist/assistant.mjs','dist/inonda-chat.js','dist/inonda-network.js','tools/inonda_chat.js','tools/network-copy.json','tests/estimator.test.mjs','tests/assistant.test.mjs','tests/i18n.test.mjs'})
+          APPROVED_INDEX_EDITS = [
+              ("We assess, quote and take on only jobs of more than one day of work. Small repairs, urgent repairs and jobs of a few minutes or hours are carried out only for customers with a maintenance contract. Quotations under a maintenance contract are completely free.",
+               "For jobs estimated at up to €1,000, the on-site quotation visit is free within 10 km of our office in Strovolos and costs €50 beyond 10 km. In Limassol, Larnaca, Agia Napa and Paphos, quotation visits for jobs up to €1,000 are charged; for work over €1,000, the quotation is included in the work. We take on jobs of every size, including small jobs of a few hours. Quotations under a maintenance contract are completely free."),
+              ('HE490415', 'HE 490415'),
+              ('<div><span>Property services across Cyprus</span>', '<div><span class="footer-slogan"><strong>Quality above all</strong></span><span>Property services across Cyprus</span>'),
+          ]
           def previous(path):
               return subprocess.check_output(['git', 'show', 'origin/main:' + path], text=True)
           def normalize(text):
@@ -32,7 +40,10 @@ jobs:
                   if path == 'dist/index.html':
                       anchor = '<div id="bp-jobs"></div>'
                       added = '\n        <section id="bp-carpentry-section" class="bp-carpentry" aria-label="Carpentry & Custom Woodwork"></section>'
-                      assert old_html.replace(anchor,anchor+added) == new_html, 'Unexpected estimator HTML change'
+                      approved = old_html
+                      for before, after in APPROVED_INDEX_EDITS:
+                          approved = approved.replace(before, after)
+                      assert new_html in (approved, old_html.replace(anchor,anchor+added)), 'Unexpected estimator HTML change'
                   else:
                       assert old_html == new_html, 'Original HTML changed: ' + path
               elif path == 'tools/inonda_network.py':
